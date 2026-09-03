@@ -1,0 +1,21 @@
+node_modules/
+dist/
+
+# TypeScript incremental build output
+*.tsbuildinfo
+
+# Generated Vite config output; vite.config.ts is the source
+vite.config.js
+vite.config.d.ts
+
+# Local environment and editor files
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+*.log
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
