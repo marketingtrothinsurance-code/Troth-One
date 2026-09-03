@@ -10,8 +10,8 @@ export function StatusBadge({status}:{status:string}) {
   return <span className={`status status-${key}`}><i/>{status}</span>
 }
 
-export function StatCard({label,value,meta,tone='navy',onClick}:{label:string,value:string|number,meta:string,tone?:string,onClick?:()=>void}) {
-  return <button className={`stat-card tone-${tone}`} onClick={onClick}><span>{label}</span><strong>{value}</strong><small>{meta}</small>{onClick && <ArrowRight size={17}/>}</button>
+export function StatCard({label,value,meta,tone='navy',onClick,icon}:{label:string,value:string|number,meta:string,tone?:string,onClick?:()=>void;icon?:React.ReactNode}) {
+  return <button className={`stat-card tone-${tone}`} onClick={onClick}>{icon&&<i className="stat-card-icon">{icon}</i>}<span>{label}</span><strong>{value}</strong><small>{meta}</small>{onClick && <ArrowRight size={17}/>}</button>
 }
 
 export function SearchBox({value,onChange,placeholder='Search'}:{value:string,onChange:(v:string)=>void,placeholder?:string}) {

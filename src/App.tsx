@@ -11,6 +11,7 @@ import { FranchiseeSupport } from './pages/FranchiseeSupport'
 import { FranchiseeDashboard } from './pages/FranchiseeDashboard'
 import { FranchiseeCustomers } from './pages/FranchiseeCustomers'
 import { FranchiseeCRM } from './pages/FranchiseeCRM'
+import { FranchiseeBusiness } from './pages/FranchiseeBusiness'
 import { roleConfigs } from './config/roles'
 import type { Application, Role } from './types'
 import type { FranchiseeCustomer, FranchiseeLead } from './types/franchisee'
@@ -79,6 +80,7 @@ export default function App() {
   else if (page === 'dashboard') content = <Dashboard role={role} apps={visibleApplications} onNavigate={navigate} onToast={setToast} />
   else if (role === 'franchisee' && page === 'customers') content = <FranchiseeCustomers customers={franchiseeCustomers} apps={visibleApplications} onAdd={addFranchiseeCustomer} onUpdate={updateFranchiseeCustomer} onNavigate={navigate} onToast={setToast} />
   else if (role === 'franchisee' && page === 'crm') content = <FranchiseeCRM leads={franchiseeLeads} onAdd={addFranchiseeLead} onUpdate={updateFranchiseeLead} onConvert={convertFranchiseeLead} onNavigate={navigate} onToast={setToast} />
+  else if (role === 'franchisee' && page === 'business') content = <FranchiseeBusiness />
   else if (page === 'applications' || page === 'work-queue') content = <ApplicationsPage role={role} apps={visibleApplications} onUpdate={updateApplication} onToast={setToast} />
   else if (page === 'franchisees') content = <FranchiseesPage role={role} onToast={setToast} />
   else if (role === 'customer' && page === 'my-products') content = <CustomerProducts onToast={setToast} />

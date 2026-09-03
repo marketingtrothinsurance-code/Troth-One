@@ -72,3 +72,58 @@ export interface FranchiseeNotification {
   time: string
 }
 
+export type BusinessVertical = 'Insurance' | 'Loans' | 'Investments' | 'Protection'
+export type RevenueStatus = 'Pending' | 'Under Process' | 'Approved' | 'Paid'
+
+export interface FranchiseeBusinessSummary {
+  totalBusiness: number
+  totalRevenue: number
+  pendingRevenue: number
+  targetAchievement: number
+  businessThisMonth: number
+  revenueThisMonth: number
+  paidRevenue: number
+  monthlyTarget: number
+  targetAchievedAmount: number
+  targetRemaining: number
+  incentive: number
+  adjustments: number
+}
+
+export interface FranchiseeBusinessTrendPoint {
+  period: string
+  business: number
+  revenue: number
+}
+
+export interface FranchiseeProductPerformance {
+  product: string
+  vertical: BusinessVertical
+  applications: number
+  converted: number
+  businessValue: number
+  revenue: number
+  conversionRate: number
+  contribution: number
+}
+
+export interface FranchiseeBusinessRecord {
+  id: string
+  date: string
+  customer: string
+  reference: string
+  product: string
+  vertical: BusinessVertical
+  businessAmount: number
+  revenue: number
+  status: RevenueStatus
+  assignedTo: string
+  expectedPayoutDate?: string
+}
+
+export interface FranchiseeBusinessWorkspace {
+  summary: FranchiseeBusinessSummary
+  trend: FranchiseeBusinessTrendPoint[]
+  productPerformance: FranchiseeProductPerformance[]
+  records: FranchiseeBusinessRecord[]
+}

@@ -20,6 +20,14 @@ export interface CustomerInstallment {
   action: 'Pay' | 'Renew' | 'View'
 }
 
+export interface CustomerDashboardSummary {
+  totalNetWorth: number
+  investmentAum: number
+  insuranceCoverage: number
+  activeLoans: number
+  upcomingPayments: number
+}
+
 export const customerPromotions:CustomerPromotion[] = [
   {id:'PROMO-01',label:'CUSTOMER BENEFIT',title:'Review your family health cover before renewal',description:'Your health policy renews this month. Review coverage, family details and service needs early.',actionLabel:'Review Insurance',target:'my-products',filter:'Insurance',tone:'blue'},
   {id:'PROMO-02',label:'NEW SERVICE',title:'Plan important goals with simple calculators',description:'Explore indicative estimates for investments, loans, retirement and protection needs.',actionLabel:'Open Calculators',target:'calculator',tone:'violet'},
@@ -34,3 +42,10 @@ export const customerInstallments:CustomerInstallment[] = [
   {id:'RS-001',productName:'Equity Research Pro',reference:'Subscription RS10024',type:'Subscription Renewal',dueDate:'15 Oct 2026',amount:12000,status:'Upcoming',action:'Renew'}
 ]
 
+export const customerDashboardSummary:CustomerDashboardSummary = {
+  totalNetWorth: 4280000,
+  investmentAum: 2470000,
+  insuranceCoverage: 4500000,
+  activeLoans: 2,
+  upcomingPayments: customerInstallments.length
+}

@@ -1,4 +1,4 @@
-import type { FranchiseeCustomer, FranchiseeLead, FranchiseeNotification, LeadStage } from '../types/franchisee'
+import type { FranchiseeBusinessWorkspace, FranchiseeCustomer, FranchiseeLead, FranchiseeNotification, LeadStage } from '../types/franchisee'
 
 const standardDocuments: FranchiseeCustomer['documents'] = [
   {name:'PAN card',status:'Verified'},
@@ -69,4 +69,55 @@ export const franchiseeBusinessSummary = {
   pendingEarnings:124500,
   monthlyTarget:650000,
   targetAchieved:74.8
+}
+
+export interface FranchiseeDashboardUpdate {
+  id:string
+  label:string
+  text:string
+  target:'products'|'support'|'customers'|'business'
+}
+
+export const franchiseeDashboardUpdates:FranchiseeDashboardUpdate[] = [
+  {id:'FU-01',label:'NEW CAMPAIGN',text:'Health Insurance campaign assets are now available',target:'support'},
+  {id:'FU-02',label:'TRAINING',text:'September product training schedule has been released',target:'support'},
+  {id:'FU-03',label:'PRODUCT UPDATE',text:'Review the latest loan solutions in Products & Services',target:'products'},
+  {id:'FU-04',label:'COMPLIANCE',text:'Complete pending customer KYC cases this week',target:'customers'},
+  {id:'FU-05',label:'PAYOUT UPDATE',text:'September earnings statement is ready for review',target:'business'}
+]
+
+export const franchiseeBusinessTrend = [
+  {month:'Apr',value:318000},
+  {month:'May',value:356000},
+  {month:'Jun',value:341000},
+  {month:'Jul',value:409000},
+  {month:'Aug',value:438000},
+  {month:'Sep',value:486000}
+]
+
+export const franchiseeBusinessWorkspace:FranchiseeBusinessWorkspace = {
+  summary:{totalBusiness:13243000,totalRevenue:1248000,pendingRevenue:124500,targetAchievement:74.8,businessThisMonth:785000,revenueThisMonth:486000,paidRevenue:1123500,monthlyTarget:650000,targetAchievedAmount:486000,targetRemaining:164000,incentive:38000,adjustments:0},
+  trend:[
+    {period:'Apr',business:1420000,revenue:318000},{period:'May',business:1680000,revenue:356000},{period:'Jun',business:1540000,revenue:341000},
+    {period:'Jul',business:2110000,revenue:409000},{period:'Aug',business:2360000,revenue:438000},{period:'Sep',business:785000,revenue:486000}
+  ],
+  productPerformance:[
+    {product:'Health Insurance',vertical:'Insurance',applications:18,converted:13,businessValue:1560000,revenue:312000,conversionRate:72,contribution:25},
+    {product:'Home Loan',vertical:'Loans',applications:12,converted:7,businessValue:6200000,revenue:286000,conversionRate:58,contribution:23},
+    {product:'Mutual Funds',vertical:'Investments',applications:16,converted:12,businessValue:3180000,revenue:274000,conversionRate:75,contribution:22},
+    {product:'Business Loan',vertical:'Loans',applications:8,converted:4,businessValue:1850000,revenue:196000,conversionRate:50,contribution:16},
+    {product:'Loan Protector',vertical:'Protection',applications:11,converted:8,businessValue:453000,revenue:180000,conversionRate:73,contribution:14}
+  ],
+  records:[
+    {id:'BR-26091',date:'2026-09-02',customer:'Vivek Joshi',reference:'T1-20260041',product:'Health Insurance',vertical:'Insurance',businessAmount:18750,revenue:4800,status:'Paid',assignedTo:'Priya Nair'},
+    {id:'BR-26088',date:'2026-09-01',customer:'Riya Desai',reference:'T1-20260042',product:'Home Loan',vertical:'Loans',businessAmount:1850000,revenue:42500,status:'Approved',assignedTo:'Loan Operations',expectedPayoutDate:'2026-09-10'},
+    {id:'BR-26082',date:'2026-08-29',customer:'Meera Shah',reference:'T1-20260066',product:'Mutual Funds',vertical:'Investments',businessAmount:500000,revenue:12500,status:'Paid',assignedTo:'Investment Desk'},
+    {id:'BR-26076',date:'2026-08-25',customer:'Dev Patel',reference:'T1-20260043',product:'Business Loan',vertical:'Loans',businessAmount:2500000,revenue:58000,status:'Under Process',assignedTo:'Loan Operations',expectedPayoutDate:'2026-09-15'},
+    {id:'BR-26069',date:'2026-08-21',customer:'Vivek Joshi',reference:'T1-20260053',product:'Loan Protector',vertical:'Protection',businessAmount:22000,revenue:8800,status:'Pending',assignedTo:'Protection Desk',expectedPayoutDate:'2026-09-18'},
+    {id:'BR-26061',date:'2026-08-16',customer:'Aanya Modi',reference:'T1-20260077',product:'Mutual Funds',vertical:'Investments',businessAmount:625000,revenue:15600,status:'Paid',assignedTo:'Investment Desk'},
+    {id:'BR-26055',date:'2026-07-28',customer:'Kabir Mehta',reference:'POL-MTR-1082',product:'Health Insurance',vertical:'Insurance',businessAmount:18500,revenue:4600,status:'Paid',assignedTo:'Insurance Desk'},
+    {id:'BR-26048',date:'2026-07-19',customer:'Arjun Trivedi',reference:'T1-20260054',product:'Home Loan',vertical:'Loans',businessAmount:750000,revenue:17200,status:'Approved',assignedTo:'Loan Operations',expectedPayoutDate:'2026-09-12'},
+    {id:'BR-26039',date:'2026-06-24',customer:'Meera Shah',reference:'POL-TERM-1061',product:'Health Insurance',vertical:'Insurance',businessAmount:32000,revenue:8000,status:'Paid',assignedTo:'Insurance Desk'},
+    {id:'BR-26031',date:'2026-06-11',customer:'Vivek Joshi',reference:'MF-5318',product:'Mutual Funds',vertical:'Investments',businessAmount:300000,revenue:7500,status:'Paid',assignedTo:'Investment Desk'}
+  ]
 }
