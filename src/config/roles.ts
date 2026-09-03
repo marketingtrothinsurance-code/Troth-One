@@ -14,7 +14,7 @@ export const roleConfigs: Record<Role, RoleConfig> = {
   },
   franchisee: {
     label: 'Franchisee', shortLabel: 'Franchisee', user: 'Neha Sharma', designation: 'Troth Partner • Ahmedabad', allowedProducts: allProducts, canManage: true,
-    nav: [['dashboard','Dashboard','LayoutDashboard'],['customers','Customers & CRM','Contact'],['applications','Applications','Files'],['products','Products','Boxes'],['business','Business','ChartNoAxesCombined'],['support','Support','LifeBuoy']].map(([id,label,icon])=>({id,label,icon}))
+    nav: [['dashboard','Dashboard','LayoutDashboard'],['customers','Customers','Contact'],['crm','CRM / Sales Pipeline','Workflow'],['applications','Applications & Cases','Files'],['products','Products & Services','Boxes'],['business','Business & Revenue','ChartNoAxesCombined'],['support','Support & Service Desk','LifeBuoy']].map(([id,label,icon])=>({id,label,icon}))
   },
   rm: {
     label: 'Relationship Manager', shortLabel: 'RM', user: 'Rohan Mehta', designation: 'Relationship Manager • West', allowedProducts: allProducts, canManage: false,

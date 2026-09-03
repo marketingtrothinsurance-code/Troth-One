@@ -45,11 +45,17 @@ src/
     CustomerProducts.tsx      Customer holdings and product catalogue
     CustomerSupport.tsx       Customer tickets, FAQs, request form, AI entry point
     Dashboard.tsx             Admin/franchisee/RM/operations dashboards and customer dispatch
+    FranchiseeCRM.tsx         Franchisee lead pipeline, lead detail, KYC and conversion actions
+    FranchiseeCustomers.tsx   Franchisee customer list and Customer 360 drawer
+    FranchiseeDashboard.tsx   Franchisee operational dashboard
     FranchiseesPage.tsx       Admin/RM franchisee list and 360 drawer
     FranchiseeSupport.tsx     Dedicated multi-area franchisee support workspace
     GenericPage.tsx           Shared placeholder/summary implementation for incomplete modules
   services/
     chatService.ts            Local rule-based async chatbot response service
+    franchiseeService.ts      Mock-backed Franchisee repository boundary
+  types/
+    franchisee.ts             Customer, lead, notification and pipeline types
   App.tsx                     Root state, role filtering, and page dispatch
   main.tsx                    React entry point
   styles.css                  Global styles and responsive rules
@@ -100,8 +106,9 @@ Configured user: Neha Sharma, Troth Partner - Ahmedabad.
 
 Navigation:
 
-- `dashboard` - customer/application/business KPIs and attention queue
-- `customers` - generic Customers & CRM page and add-customer modal
+- `dashboard` - dedicated operational dashboard with customer, lead, application, conversion, revenue, action, follow-up, notification, status, pipeline, and target views
+- `customers` - dedicated customer list, filters, add flow, editable permitted contact details, and Customer 360 drawer
+- `crm` - dedicated sales pipeline and list views with lead creation, assignment, stages, KYC, activities, follow-ups, conversion, and application initiation
 - `applications` - applications restricted to franchisee `Troth Finserve`; can create and update
 - `products` - generic summary/list placeholder
 - `business` - generic performance summary
@@ -268,6 +275,8 @@ Implemented to prototype depth:
 - Admin/RM franchisee list and drawer
 - Customer product catalogue and calculators
 - Dedicated customer and franchisee support experiences
+- Franchisee Phase 1 operational dashboard, customer management, and CRM/sales pipeline
+- Typed Franchisee mock repository boundary for customers, leads, and notifications
 - Responsive shell and major page layouts
 
 Incomplete or placeholder behavior:
@@ -278,9 +287,9 @@ Incomplete or placeholder behavior:
 - Real file upload/download/export/email/callback behavior
 - Real global top-bar search and keyboard shortcut
 - Advanced application filters
-- Many Admin, RM, Operations, and Franchisee modules rendered by `GenericPage`
+- Many Admin, RM, and Operations modules plus Franchisee Products and Business are rendered by `GenericPage`
 - Most secondary Franchisee 360 tabs
-- Actual new application/franchisee/customer/user creation
+- Actual persistent application/franchisee/user creation; Phase 1 Franchisee customer and lead creation is local in-memory only
 - Customer ticket persistence and detail views
 - Validation beyond basic native HTML requirements
 - Loading, server-error, retry, optimistic-update, and empty-data states for future APIs
@@ -374,4 +383,3 @@ Before deleting or renaming any file or exported component, search all imports a
 - Persistence strategy for drafts, saved calculations, inquiries, and uploads
 - Audit/event model for regulated actions
 - Accessibility and browser support targets
-

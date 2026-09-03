@@ -15,7 +15,7 @@ export function ApplicationsPage({role,apps,onUpdate,onToast}:Props) {
   const [createOpen,setCreateOpen]=useState(false)
   const [filtersOpen,setFiltersOpen]=useState(false)
   const [sortAsc,setSortAsc]=useState(true)
-  useEffect(()=>{ sessionStorage.removeItem('troth-filter'); const id=sessionStorage.getItem('troth-open-app'); if(id){setSelected(apps.find(a=>a.id===id)||null);sessionStorage.removeItem('troth-open-app')} },[apps])
+  useEffect(()=>{ sessionStorage.removeItem('troth-filter'); const id=sessionStorage.getItem('troth-open-app'); if(id){setSelected(apps.find(a=>a.id===id)||null);sessionStorage.removeItem('troth-open-app')} const action=sessionStorage.getItem('troth-franchisee-action'); if(action==='new-application'&&['admin','franchisee'].includes(role)){setCreateOpen(true);sessionStorage.removeItem('troth-franchisee-action')} },[apps,role])
   const rows=useMemo(()=>apps.filter(a=>(product==='All'||a.product===product)&&(status==='All'||a.status===status)&&(a.customer.toLowerCase().includes(search.toLowerCase())||a.id.toLowerCase().includes(search.toLowerCase())||a.franchisee.toLowerCase().includes(search.toLowerCase()))).sort((a,b)=>sortAsc?a.ageing-b.ageing:b.ageing-a.ageing),[apps,product,status,search,sortAsc])
   const canCreate=['admin','franchisee'].includes(role)
   return <div className="page">
