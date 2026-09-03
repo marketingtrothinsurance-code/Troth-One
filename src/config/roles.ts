@@ -26,7 +26,7 @@ export const roleConfigs: Record<Role, RoleConfig> = {
   },
   customer: {
     label: 'Customer', shortLabel: 'Customer', user: 'Yash Thakar', designation: 'Customer • Ahmedabad', allowedProducts: allProducts, canManage: false,
-    nav: [['dashboard','Dashboard','LayoutDashboard'],['my-products','My Products','WalletCards'],['applications','Applications','Files'],['calculator','Calculator','Calculator'],['profile','Documents & Profile','UserRound'],['support','Support','LifeBuoy']].map(([id,label,icon])=>({id,label,icon}))
+    nav: [['dashboard','Dashboard','LayoutDashboard'],['my-products','My Products','WalletCards'],['applications','Applications','Files'],['calculator','Calculator','Calculator'],['support','Support','LifeBuoy']].map(([id,label,icon])=>({id,label,icon}))
   }
 }
 

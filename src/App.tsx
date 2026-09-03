@@ -56,6 +56,12 @@ export default function App() {
     setToast('Application updated successfully')
   }
 
+  const handleLogout = () => {
+    ['troth-filter','troth-open-app','troth-product-filter','troth-product-focus','troth-support-request','troth-open-profile-section'].forEach(key=>sessionStorage.removeItem(key))
+    setPage('dashboard')
+    setToast('Logout requires authentication integration; prototype session retained')
+  }
+
   const addFranchiseeCustomer = (customer: FranchiseeCustomer) => setFranchiseeCustomers(current => [customer, ...current])
   const updateFranchiseeCustomer = (id: string, patch: Partial<FranchiseeCustomer>) => setFranchiseeCustomers(current => current.map(customer => customer.id === id ? {...customer, ...patch} : customer))
   const addFranchiseeLead = (lead: FranchiseeLead) => setFranchiseeLeads(current => [lead, ...current])
@@ -82,7 +88,7 @@ export default function App() {
   else content = <GenericPage role={role} page={page} apps={visibleApplications} onNavigate={navigate} onToast={setToast} />
 
   return (
-    <AppShell role={role} page={page} onRoleChange={setRole} onNavigate={navigate}>
+    <AppShell role={role} page={page} onRoleChange={setRole} onNavigate={navigate} onLogout={handleLogout}>
       {content}
       {toast && <div className="toast" role="status"><span>✓</span>{toast}</div>}
     </AppShell>

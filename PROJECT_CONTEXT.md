@@ -37,6 +37,7 @@ src/
     calculators.ts            Calculator definitions and calculation functions
     franchiseeSupport.ts      Support requests and resource/training fixtures
     mockData.ts               Application/franchisee fixtures and INR formatter
+    customerDashboardData.ts  Customer promotions and unified installment fixtures
     productCatalogue.ts       Customer-facing product catalogue
   pages/
     ApplicationsPage.tsx      Shared application table, details drawer, creation form
@@ -53,6 +54,7 @@ src/
     GenericPage.tsx           Shared placeholder/summary implementation for incomplete modules
   services/
     chatService.ts            Local rule-based async chatbot response service
+    customerDashboardService.ts Mock-backed Customer dashboard repository boundary
     franchiseeService.ts      Mock-backed Franchisee repository boundary
   types/
     franchisee.ts             Customer, lead, notification and pipeline types
@@ -147,12 +149,17 @@ Configured shell user: Yash Thakar. Customer records and customer-facing copy cu
 
 Navigation:
 
-- `dashboard` - dedicated financial snapshot, product overview, charts, renewals, payments, transactions, applications, service requests, goals, and quick actions
+- `dashboard` - Troth promotions/news, number-focused summary cards, unified upcoming installments, product overview, portfolio charts, pending actions, goals, and quick actions
 - `my-products` - owned products plus product discovery, search/filter, product details, buy and inquiry forms
 - `applications` - records filtered to customer `Vivek Joshi`; read-only details
 - `calculator` - 13 local financial calculators with saved scenarios and related products
-- `profile` - generic profile/KYC/document view and upload modal
 - `support` - dedicated support tickets, FAQs, service-request modal, and floating AI assistant
+
+Customer Profile and Documents are deliberately absent from the sidebar. The Customer-only account menu in the top bar links to:
+
+- `profile` - existing profile/KYC summary
+- `documents` - customer document list and upload modal
+- Logout - safe prototype action only; real session termination requires authentication integration
 
 The floating AI assistant is mounted only on the customer Support page, despite UI copy saying it is available on any customer page.
 
@@ -275,6 +282,8 @@ Implemented to prototype depth:
 - Admin/RM franchisee list and drawer
 - Customer product catalogue and calculators
 - Dedicated customer and franchisee support experiences
+- Customer dashboard cleanup with mock-backed Troth promotions and a merged installment schedule
+- Customer-only account dropdown for Profile, Documents, and prototype-safe Logout
 - Franchisee Phase 1 operational dashboard, customer management, and CRM/sales pipeline
 - Typed Franchisee mock repository boundary for customers, leads, and notifications
 - Responsive shell and major page layouts
