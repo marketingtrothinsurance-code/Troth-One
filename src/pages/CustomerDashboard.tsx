@@ -28,17 +28,18 @@ const installments=customerDashboardRepository.listInstallments()
 
 export function CustomerDashboard({apps,onNavigate,onToast}:Props) {
   const [period,setPeriod]=useState('6M')
-  const [activePromotion,setActivePromotion]=useState(0)
   const pending=apps.filter(app=>app.pendingAction!=='None'&&!['Completed','Rejected'].includes(app.status))
-  const promotion=promotions[activePromotion]
   const goProducts=(filter?:string)=>{if(filter)sessionStorage.setItem('troth-product-filter',filter);onNavigate('my-products')}
-  const openPromotion=()=>{if(promotion.filter)sessionStorage.setItem('troth-product-filter',promotion.filter);onNavigate(promotion.target)}
+  const openPromotion=(promotion:(typeof promotions)[number])=>{if(promotion.filter)sessionStorage.setItem('troth-product-filter',promotion.filter);onNavigate(promotion.target)}
 
   return <div className="page customer-dashboard customer-dashboard-clean">
-    <section className={`customer-promotion customer-promotion-${promotion.tone}`} aria-label="Troth offers and news">
-      <div className="promotion-content"><span>{promotion.label}</span><h1>{promotion.title}</h1><p>{promotion.description}</p><button onClick={openPromotion}>{promotion.actionLabel} <ArrowRight/></button></div>
-      <div className="promotion-mark"><ShieldCheck/></div>
-      <div className="promotion-controls">{promotions.map((item,index)=><button key={item.id} className={index===activePromotion?'active':''} onClick={()=>setActivePromotion(index)} aria-label={`Show ${item.title}`}/>)}</div>
+    <section className="offers-ticker" aria-label="Troth offers and updates">
+      <div className="offers-ticker-label"><span>Offers &amp; Updates</span></div>
+      <div className="offers-ticker-viewport" aria-live="off">
+        <div className="offers-ticker-track">
+          {[false,true].map(duplicate=><div className="offers-ticker-group" aria-hidden={duplicate||undefined} key={duplicate?'duplicate':'primary'}>{promotions.map(item=><span className="offers-ticker-item" key={`${duplicate?'copy-':''}${item.id}`}><button tabIndex={duplicate?-1:0} onClick={()=>openPromotion(item)} title={item.actionLabel}><b>{item.label}</b><span>{item.title} — {item.description}</span></button><i>•</i></span>)}</div>)}
+        </div>
+      </div>
     </section>
 
     <div className="section-heading"><div><h2>Overview</h2><p>Your key numbers at a glance</p></div></div>
