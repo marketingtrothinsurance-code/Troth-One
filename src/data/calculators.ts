@@ -30,6 +30,7 @@ export interface CalculationResult { headline:string; headlineValue:string; resu
 const inr=(n:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(Math.max(0,Math.round(n)))
 const n=(values:Record<string,string|number>,key:string)=>Number(values[key])||0
 const monthlyInvestment=(target:number,annualRate:number,months:number)=>{const r=annualRate/1200;return r?target*r/(Math.pow(1+r,months)-1):target/months}
+export const estimateMonthlyInvestment=(target:number,annualRate:number,months:number)=>target<=0||months<=0?0:monthlyInvestment(target,annualRate,months)
 
 export function calculate(def:CalculatorDefinition,v:Record<string,string|number>):CalculationResult{
   if(def.kind==='sip'){const months=n(v,'years')*12,r=n(v,'returnRate')/1200,invested=n(v,'monthly')*months;const future=r?n(v,'monthly')*((Math.pow(1+r,months)-1)/r)*(1+r):invested;return {headline:'Estimated Future Value',headlineValue:inr(future),results:[{label:'Total Amount Invested',value:inr(invested)},{label:'Estimated Gain',value:inr(future-invested)},{label:'Investment Period',value:`${n(v,'years')} years`}],meaning:'A disciplined monthly investment may build this estimated value over the selected period.',chart:{primary:invested,secondary:future-invested,primaryLabel:'Invested',secondaryLabel:'Estimated growth'},saveLabel:`SIP Plan — ${inr(n(v,'monthly'))}/month`}}

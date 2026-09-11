@@ -1,4 +1,4 @@
-import type { ProductType, Role, RoleConfig } from '../types'
+import type { NavItem, ProductType, Role, RoleConfig } from '../types'
 
 const allProducts: ProductType[] = ['Insurance', 'Loans', 'Loan Protector', 'Mutual Fund', 'Demat', 'Research', 'Advisory']
 
@@ -8,13 +8,18 @@ export const roleConfigs: Record<Role, RoleConfig> = {
     nav: [
       ['dashboard','Dashboard','LayoutDashboard'], ['franchisees','Franchisees','Store'], ['users','Users & Access','Users'],
       ['customers','Customers','Contact'], ['applications','Applications','Files'], ['products','Products & Partners','Boxes'],
-      ['operations','Operations','Workflow'], ['support','Support','LifeBuoy'], ['reports','Reports & MIS','ChartNoAxesCombined'],
+      ['operations','Operations','Workflow'], ['commission-payout','Commission & Payout','HandCoins'], ['support','Support','LifeBuoy'], ['reports','Reports & MIS','ChartNoAxesCombined'],
       ['administration','Administration','Settings']
     ].map(([id,label,icon]) => ({id,label,icon}))
   },
   franchisee: {
-    label: 'Franchisee', shortLabel: 'Franchisee', user: 'Neha Sharma', designation: 'Troth Partner • Ahmedabad', allowedProducts: allProducts, canManage: true,
-    nav: [['dashboard','Dashboard','LayoutDashboard'],['customers','Customers','Contact'],['crm','CRM / Sales Pipeline','Workflow'],['applications','Applications & Cases','Files'],['products','Products & Services','Boxes'],['business','Business & Revenue','ChartNoAxesCombined'],['support','Support & Service Desk','LifeBuoy']].map(([id,label,icon])=>({id,label,icon}))
+    label: 'Franchisee', shortLabel: 'Franchisee', user: 'Troth Meridian Financial Services', designation: 'FR-GJ-0418 · Ahmedabad', allowedProducts: allProducts, canManage: true,
+    nav: [
+      ['dashboard','Dashboard','LayoutDashboard'],['customers','Customers','Contact'],['crm','CRM / Sales Pipeline','MessagesSquare'],
+      ['applications','Application Tracking','Files'],['renewals','Renewals','CalendarClock'],['products','Products & Services','Boxes'],['support','Support & Service Desk','LifeBuoy'],
+      ['notifications','Announcement','Bell'],
+      ['marketing','Marketing Centre','MessagesSquare'],['training','Troth Academy','BadgeCheck']
+    ].map(([id,label,icon]):NavItem=>({id,label,icon})).flatMap((item,index)=>index===3?[{id:'onboarding',label:'Onboarding',icon:'UserRoundPlus',children:[{id:'employees',label:'Employee',icon:'Users'},{id:'sub-franchisees',label:'Sub Franchisee',icon:'Store'},{id:'agents',label:'Agents',icon:'BadgeCheck'}]},item]:[item]).concat([{id:'reports',label:'Reports',icon:'ChartNoAxesCombined',children:[{id:'business-revenue',label:'Business & Revenue Reports',icon:'ChartNoAxesCombined'}]},{id:'commission-payout',label:'Commission & Payout',icon:'HandCoins'}])
   },
   rm: {
     label: 'Relationship Manager', shortLabel: 'RM', user: 'Rohan Mehta', designation: 'Relationship Manager • West', allowedProducts: allProducts, canManage: false,
@@ -26,7 +31,7 @@ export const roleConfigs: Record<Role, RoleConfig> = {
   },
   customer: {
     label: 'Customer', shortLabel: 'Customer', user: 'Yash Thakar', designation: 'Customer • Ahmedabad', allowedProducts: allProducts, canManage: false,
-    nav: [['dashboard','Dashboard','LayoutDashboard'],['my-products','My Products','WalletCards'],['applications','Applications','Files'],['calculator','Calculator','Calculator'],['support','Support','LifeBuoy']].map(([id,label,icon])=>({id,label,icon}))
+    nav: [['dashboard','Dashboard','LayoutDashboard'],['offers-updates','Offers & Updates','Megaphone'],['my-products','My Products','WalletCards'],['applications','Applications','Files'],['calculator','Calculator','Calculator'],['support','Support','LifeBuoy']].map(([id,label,icon])=>({id,label,icon}))
   }
 }
 

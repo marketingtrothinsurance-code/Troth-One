@@ -3,8 +3,10 @@ import { formatINR, franchisees, recentActivity } from '../data/mockData'
 import type { Application, Role } from '../types'
 import { PageHeader, StatCard, StatusBadge } from '../components/UI'
 import { CustomerDashboard } from './CustomerDashboard'
+import { AdminDashboard } from './AdminDashboard'
+import type { CustomerGoal } from '../data/customerGoalsData'
 
-interface Props { role: Role; apps: Application[]; onNavigate:(page:string,filter?:string)=>void; onToast:(s:string)=>void }
+interface Props { role: Role; apps: Application[]; customerGoals:CustomerGoal[]; onNavigate:(page:string,filter?:string)=>void; onToast:(s:string)=>void }
 
 const copy: Record<Role,{eyebrow:string,title:string,desc:string}> = {
   admin:{eyebrow:'PLATFORM OVERVIEW',title:'Good morning, Aarav',desc:'Here’s what is happening across Troth One today.'},
@@ -14,17 +16,16 @@ const copy: Record<Role,{eyebrow:string,title:string,desc:string}> = {
   customer:{eyebrow:'MY FINANCIAL WORLD',title:'Welcome back, Vivek',desc:'Your products, applications and next actions in one place.'}
 }
 
-export function Dashboard({role,apps,onNavigate,onToast}:Props) {
-  if (role === 'customer') return <CustomerDashboard apps={apps} onNavigate={onNavigate} onToast={onToast}/>
+export function Dashboard({role,apps,customerGoals,onNavigate,onToast}:Props) {
+  if (role === 'customer') return <CustomerDashboard apps={apps} goals={customerGoals} onNavigate={onNavigate} onToast={onToast}/>
+  if (role === 'admin') return <AdminDashboard apps={apps} onNavigate={onNavigate} onToast={onToast}/>
   const active = apps.filter(a=>!['Completed','Rejected'].includes(a.status)).length
   const delayed = apps.filter(a=>a.status==='Delayed').length
   const pending = apps.filter(a=>a.pendingAction!=='None').length
   const completed = apps.filter(a=>a.status==='Completed').length
   const total = apps.reduce((s,a)=>s+a.amount,0)
   const c = copy[role]
-  const stats = role === 'admin' ? [
-    ['Total Franchisees','12','10 active','navy','franchisees'],['Total Customers','648','+32 this month','blue','customers'],['Active Applications',active,'Across 7 products','violet','applications'],['Business This Month',formatINR(48200000,true),'↑ 12.4% vs Aug','green','reports'],['Pending Actions',pending,'Needs follow-up','amber','applications'],['Delayed Cases',delayed,'Needs attention','red','applications'],['Support Tickets','14','5 awaiting response','cyan','support'],['Active Franchisees','10','83% of network','navy','franchisees']
-  ] : role === 'franchisee' ? [
+  const stats = role === 'franchisee' ? [
     ['Total Customers','64','+5 this month','navy','customers'],['Active Applications',active,'Across all products','blue','applications'],['Pending Follow-ups','8','3 due today','amber','customers'],['Pending Documents',pending,'Needs customer action','red','applications'],['Business This Month',formatINR(total,true),'↑ 8.2%','green','business']
   ] : role === 'rm' ? [
     ['Assigned Franchisees','3','All active','navy','franchisees'],['Total Business',formatINR(total,true),'This month','green','performance'],['Active Applications',active,'Across your network','blue','applications'],['Pending Cases',pending,'Needs coordination','amber','applications'],['Delayed Cases',delayed,'Escalate if needed','red','applications']

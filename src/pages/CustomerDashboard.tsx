@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { ArrowRight, Calculator, CalendarClock, ChevronRight, CircleDollarSign, FileText, GraduationCap, Headphones, HeartPulse, Home, Landmark, MessageCircle, PiggyBank, Plus, ShieldCheck, TrendingUp, Upload, WalletCards } from 'lucide-react'
+import { ArrowRight, Calculator, CalendarClock, ChevronRight, CircleDollarSign, FileHeart, FileText, GraduationCap, Headphones, HeartPulse, Home, Landmark, MessageCircle, Paperclip, PiggyBank, ShieldCheck, ShoppingBag, Target, TrendingUp, Upload, WalletCards, X } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Application } from '../types'
 import { formatINR } from '../data/mockData'
 import { customerDashboardRepository } from '../services/customerDashboardService'
 import { StatusBadge } from '../components/UI'
+import { getGoalMetrics, priorityRank, type CustomerGoal, type GoalCategory } from '../data/customerGoalsData'
 
-interface Props { apps:Application[]; onNavigate:(page:string,filter?:string)=>void; onToast:(message:string)=>void }
+interface Props { apps:Application[]; goals:CustomerGoal[]; onNavigate:(page:string,filter?:string)=>void; onToast:(message:string)=>void }
 
 const products = [
   {name:'Mutual Funds',value:'₹18.75 L',meta:'3 folios',filter:'Mutual Funds',icon:TrendingUp,tone:'blue'},
@@ -19,37 +20,38 @@ const products = [
   {name:'Research / Advisory',value:'Active',meta:'Renews 15 Oct 2026',filter:'Research / Advisory',icon:FileText,tone:'slate'}
 ]
 
-const goals:Array<[string,number,string,LucideIcon]> = [
-  ['Retirement',68,'₹20.4 L of ₹30 L',PiggyBank],['Child education',44,'₹8.8 L of ₹20 L',GraduationCap],['Emergency fund',82,'₹4.1 L of ₹5 L',ShieldCheck],['Home upgrade',31,'₹4.7 L of ₹15 L',Home]
-]
-const quickActions:Array<[LucideIcon,string,string]> = [[Calculator,'Plan your future','calculator'],[TrendingUp,'Explore products','my-products'],[Plus,'Start application','my-products'],[Upload,'Upload document','documents'],[MessageCircle,'Request callback','support'],[Headphones,'Service request','support']]
+const goalIcons:Partial<Record<GoalCategory,LucideIcon>>={Retirement:PiggyBank,'Child Education':GraduationCap,'Emergency Fund':ShieldCheck,Home}
+const quickActions:Array<[LucideIcon,string,string]> = [[ShoppingBag,'Buy Online','my-products'],[FileHeart,'Register Claim','claim'],[Calculator,'Plan your future','calculator'],[TrendingUp,'Explore products','my-products'],[MessageCircle,'Request callback','support'],[Headphones,'Service request','support']]
 const promotions=customerDashboardRepository.listPromotions()
 const installments=customerDashboardRepository.listInstallments()
 const summary=customerDashboardRepository.getSummary()
 
-export function CustomerDashboard({apps,onNavigate,onToast}:Props) {
+export function CustomerDashboard({apps,goals,onNavigate,onToast}:Props) {
   const [period,setPeriod]=useState('6M')
+  const [claimOpen,setClaimOpen]=useState(false)
   const pending=apps.filter(app=>app.pendingAction!=='None'&&!['Completed','Rejected'].includes(app.status))
   const goProducts=(filter?:string)=>{if(filter)sessionStorage.setItem('troth-product-filter',filter);onNavigate('my-products')}
   const openPromotion=(promotion:(typeof promotions)[number])=>{if(promotion.filter)sessionStorage.setItem('troth-product-filter',promotion.filter);onNavigate(promotion.target)}
+  const dashboardGoals=[...goals].filter(goal=>!['Completed','Paused'].includes(goal.status)).sort((a,b)=>priorityRank[a.priority]-priorityRank[b.priority]||a.targetDate.localeCompare(b.targetDate)||(b.updatedAt??b.createdAt).localeCompare(a.updatedAt??a.createdAt)).slice(0,3)
 
   return <div className="page customer-dashboard customer-dashboard-clean">
-    <section className="offers-ticker" aria-label="Troth offers and updates">
+    <section className="offers-ticker customer-offers-ticker" aria-label="Troth offers and updates">
       <div className="offers-ticker-label"><span>Offers &amp; Updates</span></div>
       <div className="offers-ticker-viewport" aria-live="off">
         <div className="offers-ticker-track">
           {[false,true].map(duplicate=><div className="offers-ticker-group" aria-hidden={duplicate||undefined} key={duplicate?'duplicate':'primary'}>{promotions.map(item=><span className="offers-ticker-item" key={`${duplicate?'copy-':''}${item.id}`}><button tabIndex={duplicate?-1:0} onClick={()=>openPromotion(item)} title={item.actionLabel}><b>{item.label}</b><span>{item.title} — {item.description}</span></button><i>•</i></span>)}</div>)}
         </div>
       </div>
+      <button className="offers-ticker-view-all" onClick={()=>onNavigate('offers-updates')}>View all <ArrowRight/></button>
     </section>
 
-    <div className="section-heading"><div><h2>Overview</h2><p>Your key numbers at a glance</p></div></div>
+    <div className="section-heading"><div><h2>My Portfolio</h2><p>Your key numbers at a glance</p></div></div>
     <section className="customer-number-grid">
-      <button onClick={()=>goProducts()}><span><WalletCards/></span><small>Total Net Worth</small><strong>{formatINR(summary.totalNetWorth,true)}</strong></button>
-      <button onClick={()=>goProducts('Investments')}><span><TrendingUp/></span><small>Investment (AUM)</small><strong>{formatINR(summary.investmentAum,true)}</strong></button>
-      <button onClick={()=>goProducts('Insurance')}><span><ShieldCheck/></span><small>Insurance Coverage</small><strong>{formatINR(summary.insuranceCoverage,true)}</strong></button>
-      <button onClick={()=>goProducts('Loans')}><span><Landmark/></span><small>Active Loans</small><strong>{summary.activeLoans}</strong></button>
-      <button onClick={()=>document.getElementById('upcoming-installments')?.scrollIntoView({behavior:'smooth'})}><span><CalendarClock/></span><small>Upcoming Payments &amp; Installments</small><strong>{summary.upcomingPayments}</strong></button>
+      <button onClick={()=>goProducts('Investments')}><span><WalletCards/></span><small>Investment Amount</small><strong>{formatINR(summary.investmentAum,true)}</strong></button>
+      <button onClick={()=>goProducts()}><span><TrendingUp/></span><small>Portfolio (AUM)</small><strong>{formatINR(summary.totalNetWorth,true)}</strong></button>
+      <button onClick={()=>goProducts('Insurance')}><span><ShieldCheck/></span><small>Active Policy Premium</small><strong>{formatINR(summary.insuranceCoverage,true)}</strong></button>
+      <button onClick={()=>goProducts('Loans')}><span><Landmark/></span><small>Active Loans</small><strong>{summary.activeLoanCount}</strong><em className="customer-kpi-secondary">{formatINR(summary.activeLoanOutstandingAmount,true)} outstanding</em></button>
+      <button onClick={()=>document.getElementById('upcoming-installments')?.scrollIntoView({behavior:'smooth'})}><span><CalendarClock/></span><small>Upcoming Payments &amp; Installments</small><strong>{summary.upcomingPaymentCount}</strong><em className="customer-kpi-secondary">{formatINR(summary.upcomingPaymentAmount)} total due</em></button>
     </section>
 
     <section className="customer-row customer-overview-row">
@@ -66,7 +68,12 @@ export function CustomerDashboard({apps,onNavigate,onToast}:Props) {
       </section>
     </section>
 
-    <section className="customer-bottom-row"><div className="customer-card goals-card"><div className="customer-card-head"><div><h2>My Goals</h2><p>Progress towards what matters to you</p></div><button onClick={()=>onToast('Goals workspace opened')}>Manage goals</button></div><div className="goals-grid">{goals.map(([name,progress,amount,Icon])=><div key={String(name)}><span><Icon/></span><div><p><b>{String(name)}</b><strong>{Number(progress)}%</strong></p><div className="goal-bar"><i style={{width:`${progress}%`}}/></div><small>{String(amount)}</small></div></div>)}</div></div><div className="customer-card quick-actions-card"><div className="customer-card-head"><div><h2>Quick Actions</h2><p>Common things you may need</p></div></div><div className="customer-quick-grid">{quickActions.map(([Icon,label,target])=><button key={label} onClick={()=>{if(target==='my-products')sessionStorage.setItem('troth-product-focus','explore');onNavigate(target)}}><span><Icon/></span>{label}</button>)}</div></div></section>
+    <section className="customer-bottom-row"><div className="customer-card goals-card"><div className="customer-card-head"><div><h2>My Goals</h2><p>Progress towards what matters to you</p></div><button onClick={()=>onNavigate('goals')}>Manage goals</button></div>{dashboardGoals.length?<div className="goals-grid">{dashboardGoals.map(goal=>{const metrics=getGoalMetrics(goal),Icon=goalIcons[goal.category]??Target;return <button key={goal.id} onClick={()=>{sessionStorage.setItem('troth-open-goal',goal.id);onNavigate('goals')}}><span><Icon/></span><div><p><b>{goal.name}</b><strong>{Math.round(metrics.progress)}%</strong></p><div className="goal-bar"><i style={{width:`${metrics.progress}%`}}/></div><small>{formatINR(goal.currentAmount)} of {formatINR(goal.targetAmount)} · {new Intl.DateTimeFormat('en-IN',{month:'short',year:'numeric'}).format(new Date(`${goal.targetDate}T12:00:00`))}</small></div></button>})}</div>:<div className="dashboard-goals-empty"><Target/><div><b>Plan your first financial goal</b><p>Set a target and track your progress over time.</p></div><button onClick={()=>{sessionStorage.setItem('troth-goals-add','true');onNavigate('goals')}}>Set a Goal</button></div>}</div><div className="customer-card quick-actions-card"><div className="customer-card-head"><div><h2>Quick Actions</h2><p>Common things you may need</p></div></div><div className="customer-quick-grid">{quickActions.map(([Icon,label,target])=><button key={label} onClick={()=>{if(target==='claim'){setClaimOpen(true);return}if(target==='my-products')sessionStorage.setItem('troth-product-focus','explore');onNavigate(target)}}><span><Icon/></span>{label}</button>)}</div></div></section>
     <section className="advisory-banner"><div className="banner-art"><ShieldCheck/></div><div><span>SMART PROTECTION CHECK</span><h2>Protect your home loan and your family’s future</h2><p>You have an active home loan. A Loan Protector can help cover the outstanding amount during unforeseen events.</p></div><button onClick={()=>goProducts('Loan Protector')}>Explore Loan Protector <ArrowRight/></button></section>
+    {claimOpen&&<ClaimRegistrationModal onClose={()=>setClaimOpen(false)} onRegistered={()=>{setClaimOpen(false);onToast('Claim registered successfully. Our claims team will contact you shortly.')}}/>}
   </div>
+}
+
+function ClaimRegistrationModal({onClose,onRegistered}:{onClose:()=>void;onRegistered:()=>void}){
+  return <div className="modal-wrap"><button className="modal-scrim" aria-label="Close claim registration" onClick={onClose}/><form className="modal customer-claim-modal" onSubmit={event=>{event.preventDefault();onRegistered()}}><div className="modal-heading"><div className="modal-icon"><FileHeart/></div><div><span className="eyebrow">CLAIMS ASSISTANCE</span><h2>Register Claim</h2></div><button type="button" className="icon-button" aria-label="Close" onClick={onClose}><X/></button></div><label>Policy / Product *<select required defaultValue=""><option value="" disabled>Select policy or product</option><option>Family Health Secure · Policy HDF12345678</option><option>Motor Insurance · Policy TAT98243110</option><option>Loan Protector · Active cover</option></select></label><label>Claim Type *<select required defaultValue=""><option value="" disabled>Select claim type</option><option>Hospitalisation</option><option>Reimbursement</option><option>Cashless Treatment</option><option>Accident / Damage</option><option>Death Benefit</option><option>Other</option></select></label><div className="form-row"><label>Date of Incident / Hospitalisation *<input required type="date"/></label><label>Claim Amount<input type="number" min="0" placeholder="₹"/></label></div><label>Short Description *<textarea required placeholder="Briefly describe the incident and assistance required"/></label><label>Upload Supporting Document<input type="file" accept=".pdf,.jpg,.jpeg,.png"/></label><div className="form-actions"><button type="button" className="secondary-btn" onClick={onClose}>Cancel</button><button className="primary-btn"><Paperclip/> Register Claim</button></div></form></div>
 }

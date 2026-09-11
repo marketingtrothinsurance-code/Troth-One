@@ -1,0 +1,15 @@
+/*
+Temporarily disabled: the complete Franchise Configuration page implementation is
+preserved below so it can be restored when franchise-side configuration is enabled.
+
+import { LockKeyhole, Send } from 'lucide-react'
+import type { Certification, ProductMapping, FranchiseeProduct } from '../types'
+import { DataTable, Panel, StatusBadge, PageHeader } from '../components/FranchiseeUI'
+
+export function ConfigurationPage({products,mappings,certifications,onToast}:{products:FranchiseeProduct[];mappings:ProductMapping[];certifications:Certification[];onToast:(s:string)=>void}){
+ return <><PageHeader eyebrow="LIMITED SELF-SERVICE" title="Franchise Configuration" description="View product mapping, team permission ceilings, and applicable slabs. HO-owned controls remain read-only."/>
+ <div className="tf-notice"><LockKeyhole/><div><b>Franchise-side access</b><p>You can view configuration and raise change requests. Onboarding, product activation, and commission edits remain owned by HO Admin / Finance.</p></div></div>
+ <Panel title="Product Mapping / Empanelment" subtitle="Certification changes from Training update this view immediately"><DataTable headers={['Product','Category','Enabled','Prerequisite','Certification','Empanelment','']}><>{products.map(product=>{const map=mappings.find(m=>m.productId===product.id),cert=certifications.find(c=>c.productId===product.id);return <tr key={product.id}><td><b>{product.name}</b></td><td>{product.category}</td><td><StatusBadge>{map?.enabled?'Enabled':'Disabled'}</StatusBadge></td><td>{map?.prerequisite}</td><td><StatusBadge>{cert?.status||'Not required'}</StatusBadge></td><td><StatusBadge>{map?.empanelment||'Pending'}</StatusBadge></td><td><button className="tf-text-btn" onClick={()=>onToast(`Product mapping request for ${product.name} routed to HO Admin`)}><Send/> Raise request</button></td></tr>})}</></DataTable></Panel>
+ <div className="tf-grid tf-grid-2"><Panel title="Team role configuration" subtitle="Approved permission ceiling"><div className="tf-role-cards"><div><b>Franchise Principal</b><p>Customers, team, applications, support, reporting, configuration requests</p><StatusBadge>Active</StatusBadge></div><div><b>Relationship Executive</b><p>Customers, CRM, create applications, product catalog</p><button className="tf-text-btn" onClick={()=>onToast('Role configuration editor opened within franchise ceiling')}>Manage permitted access</button></div><div><b>Service Coordinator</b><p>Customers, documents, pending actions, support tickets</p><button className="tf-text-btn" onClick={()=>onToast('Role configuration editor opened within franchise ceiling')}>Manage permitted access</button></div></div></Panel><Panel title="Commission / Payout View" subtitle="Effective slabs are configured by HO Admin / Finance"><div className="tf-slab-list">{products.slice(0,7).map(p=><div key={p.id}><span><b>{p.name}</b><small>Effective 01 Apr 2026</small></span><strong>{p.commission}</strong><LockKeyhole/></div>)}</div><div className="tf-note">Read-only. Revised slabs apply only from their configured effective date.</div></Panel></div></>
+}
+*/

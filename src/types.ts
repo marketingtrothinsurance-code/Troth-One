@@ -32,7 +32,7 @@ export interface Franchisee {
   status: 'Active' | 'Inactive' | 'Onboarding'
 }
 
-export interface NavItem { id: string; label: string; icon: string }
+export interface NavItem { id: string; label: string; icon: string; children?:NavItem[] }
 
 export interface RoleConfig {
   label: string
