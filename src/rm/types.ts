@@ -1,8 +1,9 @@
 import type { ProductType } from '../types'
 import type { LeadStage } from '../franchisee/types'
+import type { InquirySource, InquiryStatus } from '../franchisee/types'
 
 export type SLAStatus = 'on-track' | 'attention' | 'overdue'
-export type RMModule = 'dashboard'|'customers'|'leads'|'applications'|'support'|'franchises'|'communications'|'marketing'|'training'|'reports'|'profile'
+export type RMModule = 'dashboard'|'customers'|'leads'|'applications'|'renewals'|'commission-payout'|'support'|'franchises'|'communications'|'marketing'|'training'|'reports'|'profile'
 export type Priority = 'Low'|'Normal'|'High'|'Critical'
 
 export interface RMUser {
@@ -33,8 +34,37 @@ export interface RMLead { id:string; franchiseId:string; customer:string; mobile
 export type RMAssistanceType='Guidance'|'Franchise Follow-up'|'Customer Discussion Support'|'Documentation Support'|'Product / Policy Guidance'|'Quotation / Pricing Support'|'Escalation Support'|'Internal Coordination'|'Case Review'|'Other'
 export type RMAssistancePriority='Normal'|'Important'|'Urgent'
 export interface RMLeadAssistance {id:string;leadId:string;rmId:string;createdBy:string;assistanceType:RMAssistanceType;details:string;createdAt:string;followUpRequired:boolean;followUpAt?:string;followUpNote?:string;followUpStatus:'Not Required'|'Pending'|'Completed';priority:RMAssistancePriority}
-export interface RMEscalation { id:string; applicationId:string; type:string; subject:string; description:string; assignedTo:string; priority:Priority; status:'Open'|'In Progress'|'Resolved'|'Closed'; raisedAt:string; comments:string[] }
-export interface RMApplication { id:string; franchiseId:string; customer:string; product:ProductType; type:string; stage:string; pendingWith:'Head Office'|'Franchise'|'Provider'|'Customer'; owner:string; submitted:string; updated:string; age:number; queryDays?:number; documents:{name:string;status:string}[]; timeline:string[] }
+export type RMInquiryAction='Inquiry Opened'|'Comment Added'|'Call Logged'|'Follow-Up Logged'|'Internal Note Added'|'Marked Assisted'|'Status Changed'
+export interface RMInquiryActivity {id:string;action:RMInquiryAction;user:string;role:string;createdAt:string;remarks:string;followUpAt?:string}
+export interface RMInquiry {id:string;customerId?:string;customerName:string;mobile:string;email?:string;franchiseId?:string;assignedRMId?:string;assignedRMName?:string;inquiryType:string;source:InquirySource;productService?:string;subject:string;details:string;receivedAt:string;status:InquiryStatus;activities:RMInquiryActivity[]}
+export type RMRenewalStatus='Live'|'Overdue'|'Renewed'|'Lost'|'Renewal Initiated'
+export type RMRenewalActivityType='Renewal Generated'|'Franchise Notified'|'RM Viewed'|'RM Nudge Sent'|'Call Logged'|'Follow-Up Added'|'Comment Added'|'Renewal Started'|'Renewal Completed'|'Renewal Marked Lost'
+export interface RMRenewalActivity {id:string;type:RMRenewalActivityType;createdAt:string;user:string;role:string;remarks:string;followUpAt?:string}
+export interface RMRenewal {id:string;customerId:string;customerName:string;mobile:string;email:string;franchiseId:string;product:string;provider:string;policyNumber:string;currentPremium:number;renewalDueDate:string;daysRemaining:number;status:RMRenewalStatus;caseId?:string;notes:string[];activities:RMRenewalActivity[]}
+export type RMIssueStatus='Open'|'In Progress'|'Resolved'|'Closed'
+export type RMIssueAssignee='Head Office Operations'|'Franchise'
+export interface RMIssueComment { id:string; author:string; role:string; createdAt:string; text:string }
+export interface RMIssueActivity { id:string; createdAt:string; text:string }
+export interface RMEscalation {
+  id:string
+  applicationId:string
+  type:string
+  subject:string
+  description:string
+  assignedTo:RMIssueAssignee
+  priority:Priority
+  status:RMIssueStatus
+  raisedBy:string
+  raisedByRole:string
+  raisedAt:string
+  updatedAt:string
+  resolution?:string
+  resolvedAt?:string
+  closedAt?:string
+  comments:RMIssueComment[]
+  activity:RMIssueActivity[]
+}
+export interface RMApplication { id:string; franchiseId:string; customer:string; product:ProductType; type:string; stage:string; status:'In Review'|'Pending'|'Approved'|'Completed'; pendingWith:'Head Office'|'Franchise'|'Provider'|'Customer'; pendingSince:string; owner:string; submitted:string; updated:string; age:number; queryDays?:number; documents:{name:string;status:string}[]; timeline:string[] }
 export interface RMTicket { id:string; franchiseId:string; category:string; subject:string; related?:string; desk:string; status:'Open'|'In Progress'|'Waiting'|'Resolved'|'Closed'; priority:Priority; created:string; updated:string; age:number; messages:string[] }
 export interface RMCommunication { id:string; title:string; type:string; message:string; url?:string; franchiseIds:string[]; created:string }
 export interface RMMaterial { id:string; title:string; type:string; product:string; franchiseIds:string[]; uploaded:string }

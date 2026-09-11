@@ -1,54 +1,38 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { AlertTriangle, BarChart3, CalendarClock, Check, ChevronRight, Clock3, FilterX, LifeBuoy, Plus, Search, Send, ShieldCheck, X } from 'lucide-react'
-import { StatCard } from '../components/UI'
+import { CalendarClock, ChevronRight, Clock3, FilterX, LifeBuoy, Plus, Search, Send, ShieldCheck, X } from 'lucide-react'
 import { formatINR } from '../data/mockData'
 import { crmLeadStageFlow } from '../franchisee/services/crmStageService'
-import { getLeadAttention, isAwaitingFollowUp } from './leadMonitoring'
+import { getLeadAttention } from './leadMonitoring'
 import { RMLeadProgress } from './RMLeadProgress'
 import { rmRepository } from './service'
 import { leadAssistanceService } from './leadAssistanceService'
+import { RMInquiryInbox } from './RMInquiryInbox'
 import type { RMLead, RMLeadAssistance, RMAssistancePriority, RMAssistanceType } from './types'
 
 interface Props {franchiseContext:string;globalSearch:string;onToast:(message:string)=>void}
 interface RMLeadFilters {search:string;franchiseId:string;stage:string;product:string;source:string;owner:string;dateFrom:string;dateTo:string;attention:string}
-type SummaryFilter='all'|'new'|'active'|'won'|'lost'|'attention'
 
 const makeFilters=(franchiseId='all',search=''):RMLeadFilters=>({search,franchiseId,stage:'all',product:'all',source:'all',owner:'all',dateFrom:'',dateTo:'',attention:'all'})
 const dateTime=(value?:string)=>value?new Date(value).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Not scheduled'
 const franchiseName=(id:string)=>rmRepository.franchises().find(item=>item.id===id)?.name||'Restricted'
-const matchesSummary=(lead:RMLead,filter:SummaryFilter,needsAttention:boolean)=>{
- if(filter==='new')return lead.stage==='New'
- if(filter==='active')return !['New','Won','Lost'].includes(lead.stage)
- if(filter==='won')return lead.stage==='Won'
- if(filter==='lost')return lead.stage==='Lost'
- if(filter==='attention')return needsAttention
- return true
-}
-
 function Chip({children,tone='neutral'}:{children:ReactNode;tone?:string}){return <span className={`rm-chip ${tone}`}>{children}</span>}
 function Empty({onClear}:{onClear:()=>void}){return <div className="rm-empty rm-lead-empty"><Search/><b>No leads found for the selected filters.</b><span>Clear the current filters to return to the full allocated lead list.</span><button onClick={onClear}><FilterX/> Clear Filters</button></div>}
 
 export function RMLeadsPage({franchiseContext,globalSearch,onToast}:Props){
  const allLeads=rmRepository.leads()
  const [filters,setFilters]=useState<RMLeadFilters>(()=>makeFilters(franchiseContext,globalSearch))
- const [summaryFilter,setSummaryFilter]=useState<SummaryFilter>('all')
+ const [activeTab,setActiveTab]=useState<'leads'|'inquiries'>('leads')
  const [selected,setSelected]=useState<string>()
  const [assistance,setAssistance]=useState(leadAssistanceService.listAll)
  useEffect(()=>setFilters(current=>({...current,franchiseId:franchiseContext,search:globalSearch})),[franchiseContext,globalSearch])
 
- const scoped=allLeads.filter(lead=>franchiseContext==='all'||lead.franchiseId===franchiseContext)
- const attentionLeads=scoped.filter(lead=>getLeadAttention(lead))
- const closed=scoped.filter(lead=>['Won','Lost'].includes(lead.stage))
- const conversion=closed.length?Math.round(scoped.filter(lead=>lead.stage==='Won').length/closed.length*100):0
- const averageAge=scoped.length?Math.round(scoped.reduce((sum,lead)=>sum+lead.age,0)/scoped.length):0
  const sources=[...new Set(allLeads.map(lead=>lead.source))]
  const owners=[...new Set(allLeads.map(lead=>lead.owner))]
  const products=[...new Set(allLeads.map(lead=>lead.product))]
  const stages=[...crmLeadStageFlow.active,crmLeadStageFlow.won,crmLeadStageFlow.lost]
  const rows=allLeads.filter(lead=>{
   const query=filters.search.trim().toLowerCase(),attention=getLeadAttention(lead),created=lead.createdAt.slice(0,10)
-  const summaryMatch=matchesSummary(lead,summaryFilter,Boolean(attention))
-  return summaryMatch&&(!query||`${lead.id} ${lead.customer} ${lead.mobile} ${lead.email||''} ${lead.owner} ${lead.source} ${franchiseName(lead.franchiseId)}`.toLowerCase().includes(query))
+  return (!query||`${lead.id} ${lead.customer} ${lead.mobile} ${lead.email||''} ${lead.owner} ${lead.source} ${franchiseName(lead.franchiseId)}`.toLowerCase().includes(query))
    &&(filters.franchiseId==='all'||lead.franchiseId===filters.franchiseId)
    &&(filters.stage==='all'||lead.stage===filters.stage)
    &&(filters.product==='all'||lead.product===filters.product)
@@ -58,20 +42,13 @@ export function RMLeadsPage({franchiseContext,globalSearch,onToast}:Props){
    &&(filters.attention==='all'||filters.attention==='attention'&&Boolean(attention)||attention?.label===filters.attention)
  })
  const lead=allLeads.find(item=>item.id===selected)
- const clearFilters=()=>{setFilters(makeFilters());setSummaryFilter('all')}
- const resetFilters=()=>{setFilters(makeFilters(franchiseContext,globalSearch));setSummaryFilter('all')}
+ const clearFilters=()=>setFilters(makeFilters())
+ const resetFilters=()=>setFilters(makeFilters(franchiseContext,globalSearch))
 
  return <>
   <div className="rm-page-header"><div><small>FRANCHISE CRM · MONITORING</small><h1>Franchise Leads</h1><p>Monitor lead progress, follow-ups and stage aging across every franchise allocated to you.</p></div></div>
-  <div className="rm-lead-summary stats-grid stats-6" aria-label="Lead summary quick filters">
-   <div className={summaryFilter==='all'?'active':''}><StatCard active={summaryFilter==='all'} label="Total Leads" value={scoped.length} meta={`${averageAge} days average stage age`} tone="navy" icon={<BarChart3/>} onClick={()=>setSummaryFilter('all')}/></div>
-   <div className={summaryFilter==='new'?'active':''}><StatCard active={summaryFilter==='new'} label="New Leads" value={scoped.filter(item=>item.stage==='New').length} meta="Awaiting first franchise action" tone="blue" icon={<Plus/>} onClick={()=>setSummaryFilter('new')}/></div>
-   <div className={summaryFilter==='active'?'active':''}><StatCard active={summaryFilter==='active'} label="Active / In Progress" value={scoped.filter(item=>!['New','Won','Lost'].includes(item.stage)).length} meta={`${scoped.filter(isAwaitingFollowUp).length} awaiting follow-up`} tone="violet" icon={<Clock3/>} onClick={()=>setSummaryFilter('active')}/></div>
-   <div className={summaryFilter==='won'?'active':''}><StatCard active={summaryFilter==='won'} label="Converted / Won" value={scoped.filter(item=>item.stage==='Won').length} meta={`${conversion}% closed-lead conversion`} tone="green" icon={<Check/>} onClick={()=>setSummaryFilter('won')}/></div>
-   <div className={summaryFilter==='lost'?'active':''}><StatCard active={summaryFilter==='lost'} label="Lost / Closed" value={scoped.filter(item=>item.stage==='Lost').length} meta="Closed by the franchise" tone="red" icon={<X/>} onClick={()=>setSummaryFilter('lost')}/></div>
-   <div className={summaryFilter==='attention'?'active':''}><StatCard active={summaryFilter==='attention'} label="Attention Required" value={attentionLeads.length} meta="Overdue, inactive or aging" tone="amber" icon={<AlertTriangle/>} onClick={()=>setSummaryFilter('attention')}/></div>
-  </div>
-  <div className="rm-lead-filters">
+  <div className="rm-tabs rm-leads-module-tabs" role="tablist"><button role="tab" aria-selected={activeTab==='leads'} className={activeTab==='leads'?'active':''} onClick={()=>setActiveTab('leads')}>Lead List</button><button role="tab" aria-selected={activeTab==='inquiries'} className={activeTab==='inquiries'?'active':''} onClick={()=>setActiveTab('inquiries')}>Inquiry Inbox</button></div>
+  {activeTab==='leads'&&<><div className="rm-lead-filters">
    <label className="rm-lead-search"><Search/><input value={filters.search} onChange={event=>setFilters({...filters,search:event.target.value})} placeholder="Search lead ID, prospect, mobile..."/></label>
    <select aria-label="Franchise" value={filters.franchiseId} onChange={event=>setFilters({...filters,franchiseId:event.target.value})}><option value="all">All franchises</option>{rmRepository.franchises().map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select>
    <select aria-label="Lead stage" value={filters.stage} onChange={event=>setFilters({...filters,stage:event.target.value})}><option value="all">All stages</option>{stages.map(item=><option key={item}>{item}</option>)}</select>
@@ -87,7 +64,8 @@ export function RMLeadsPage({franchiseContext,globalSearch,onToast}:Props){
    <div className="rm-panel-head"><div><b>{rows.length} lead{rows.length===1?'':'s'}</b><small>Allocated franchise pipeline · Read-only monitoring</small></div></div>
    <div className="rm-table-wrap"><table><thead><tr><th>Lead / Prospect</th><th>Contact</th><th>Franchise</th><th>Product</th><th>Source</th><th>Current Stage</th><th>Lead Owner</th><th>Created</th><th>Stage Age</th><th>Last Activity</th><th>Next Follow-up</th><th>RM Support</th><th>Attention</th><th aria-label="Open lead"/></tr></thead><tbody>{rows.map(item=>{const attention=getLeadAttention(item),support=assistance.filter(record=>record.leadId===item.id),pending=support.some(record=>record.followUpStatus==='Pending');return <tr key={item.id} tabIndex={0} aria-label={`Open ${item.id}, ${item.customer}`} className={`rm-lead-row ${attention?`rm-lead-attention ${attention.tone}`:''}`} onClick={event=>{if((event.target as HTMLElement).closest('button,a,input,select,textarea'))return;setSelected(item.id)}} onKeyDown={event=>{if(event.key==='Enter'){event.preventDefault();setSelected(item.id)}}}><td title={`${item.customer} · ${item.id}`}><b>{item.customer}</b><small>{item.id}</small></td><td title={`${item.mobile} · ${item.email||'Email not recorded'}`}>{item.mobile}<small>{item.email||'Email not recorded'}</small></td><td title={`${franchiseName(item.franchiseId)} · ${item.franchiseId}`}><b>{franchiseName(item.franchiseId)}</b><small>{item.franchiseId}</small></td><td title={item.product}>{item.product}<small>{formatINR(item.value)}</small></td><td title={item.source}>{item.source}{item.source==='Inquiry Inbox'&&<small>Source: Inquiry Inbox</small>}</td><td><Chip tone={item.stage==='Won'?'green':item.stage==='Lost'?'red':'blue'}>{item.stage}</Chip></td><td title={item.owner}>{item.owner}</td><td>{item.created}</td><td><b>{item.age} day{item.age===1?'':'s'}</b><small>Since stage entry</small></td><td>{dateTime(item.lastActivityAt)}</td><td title={item.nextFollowUpNote}>{item.nextFollowUpAt?dateTime(item.nextFollowUpAt):'—'}<small>{item.nextFollowUpNote}</small></td><td>{support.length?<Chip tone={pending?'amber':'blue'}>{pending?'Follow-up Pending':`${support.length} Assistance Note${support.length===1?'':'s'}`}</Chip>:<span className="rm-lead-no-support">No Assistance</span>}</td><td>{attention?<Chip tone={attention.tone}>{attention.label}</Chip>:<Chip tone="green">On Track</Chip>}</td><td className="rm-lead-row-chevron" aria-hidden="true"><ChevronRight/></td></tr>})}</tbody></table>{!rows.length&&<Empty onClear={clearFilters}/>}</div>
   </section>
-  {lead&&<AssistedLeadDrawer lead={lead} records={assistance.filter(record=>record.leadId===lead.id)} close={()=>setSelected(undefined)} onNudge={()=>onToast(`Follow-up nudge recorded for ${lead.id}`)} onAdded={record=>{setAssistance(current=>[record,...current]);onToast(`RM assistance added to ${lead.id}`)}}/>} 
+  {lead&&<AssistedLeadDrawer lead={lead} records={assistance.filter(record=>record.leadId===lead.id)} close={()=>setSelected(undefined)} onNudge={()=>onToast(`Follow-up nudge recorded for ${lead.id}`)} onAdded={record=>{setAssistance(current=>[record,...current]);onToast(`RM assistance added to ${lead.id}`)}}/>}</>}
+  {activeTab==='inquiries'&&<RMInquiryInbox franchiseContext={franchiseContext} globalSearch={globalSearch} onToast={onToast}/>}
  </>
 }
 

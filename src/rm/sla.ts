@@ -4,7 +4,8 @@ export const defaultSLAConfig:RMSLAConfig={onTrackMaxDays:2,attentionMaxDays:5,q
 
 export function getSLAStatus(item:{age:number;product?:string;queryDays?:number;id?:string},config=defaultSLAConfig,escalations:RMEscalation[]=[]):SLAStatus {
   const rule={...config,...(item.product&&config.overrides?.[item.product]||{})}
-  const openEscalation=item.id&&escalations.some(e=>e.applicationId===item.id&&!['Resolved','Closed'].includes(e.status))
+  // A resolved issue remains flagged until the RM confirms the fix and closes it.
+  const openEscalation=item.id&&escalations.some(e=>e.applicationId===item.id&&e.status!=='Closed')
   if(openEscalation||item.age>rule.attentionMaxDays)return'overdue'
   if(item.age>rule.onTrackMaxDays||(item.queryDays||0)>=rule.queryAttentionDays)return'attention'
   return'on-track'
