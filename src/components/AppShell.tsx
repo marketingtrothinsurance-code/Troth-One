@@ -42,6 +42,7 @@ export function AppShell({role,page,onRoleChange,onNavigate,onLogout,children}: 
       </nav>
       <div className="sidebar-footer">
         <button className="collapse-btn" onClick={() => setCollapsed(v=>!v)}>{collapsed ? <PanelLeftOpen size={18}/> : <><PanelLeftClose size={18}/><span>Collapse menu</span></>}</button>
+        <button className="shell-logout" onClick={onLogout} title="Logout"><LogOut size={18}/>{!collapsed&&<span>Logout</span>}</button>
       </div>
     </aside>
     {mobileOpen && <button className="scrim" onClick={()=>setMobileOpen(false)} aria-label="Close menu"/>}

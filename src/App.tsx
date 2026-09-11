@@ -24,6 +24,10 @@ import type { CustomerGoal } from './data/customerGoalsData'
 import { RMApp } from './rm/RMApp'
 import { OperationsApp } from './operations/OperationsApp'
 import { AdminCommissionPayout } from './pages/AdminCommissionPayout'
+import { LoginPage } from './auth/LoginPage'
+import { authSession } from './auth/authSession'
+
+const DEFAULT_AUTHENTICATED_PATH = '/admin/dashboard'
 
 const franchiseePages = new Set(['dashboard','customers','employees','sub-franchisees','agents','crm','applications','renewals','products','support','profile','notifications','marketing','training','business-revenue','commission-payout'])
 const isFranchiseePage=(page:string)=>franchiseePages.has(page)||/^customers\/[^/]+\/360$/.test(page)||/^sub-franchisees\/[^/]+$/.test(page)
@@ -56,6 +60,7 @@ const readInitialWorkspace = ():{role:Role;page:string} => {
 
 export default function App() {
   const initial=readInitialWorkspace()
+  const [authenticated, setAuthenticated] = useState(authSession.isAuthenticated)
   const [role, setRole] = useState<Role>(initial.role)
   const [page, setPage] = useState(initial.page)
   const [applications, setApplications] = useState<Application[]>(seedApplications)
@@ -68,10 +73,19 @@ export default function App() {
   }, [role])
 
   useEffect(() => {
-    const syncFromUrl=()=>{const current=readInitialWorkspace();setRole(current.role);setPage(current.page)}
+    const syncFromUrl=()=>{
+      if (!authSession.isAuthenticated()) {
+        if (window.location.pathname !== '/login') window.history.replaceState({},'', '/login')
+        setAuthenticated(false)
+        return
+      }
+      if (window.location.pathname === '/login') window.history.replaceState({},'',DEFAULT_AUTHENTICATED_PATH)
+      const current=readInitialWorkspace();setRole(current.role);setPage(current.page)
+    }
+    syncFromUrl()
     window.addEventListener('popstate',syncFromUrl)
     return()=>window.removeEventListener('popstate',syncFromUrl)
-  },[])
+  },[authenticated])
 
   useEffect(() => {
     if (!toast) return
@@ -109,9 +123,23 @@ export default function App() {
 
   const handleLogout = () => {
     ['troth-filter','troth-open-app','troth-product-filter','troth-product-focus','troth-support-request','troth-open-profile-section'].forEach(key=>sessionStorage.removeItem(key))
+    authSession.signOut()
+    setAuthenticated(false)
     setPage('dashboard')
-    setToast('Logout requires authentication integration; the current session remains active')
+    setToast('')
+    window.history.replaceState({},'', '/login')
   }
+
+  const handleLogin = (username:string,password:string) => {
+    if (!authSession.signIn(username,password)) return false
+    window.history.replaceState({},'',DEFAULT_AUTHENTICATED_PATH)
+    setRole('admin')
+    setPage('dashboard')
+    setAuthenticated(true)
+    return true
+  }
+
+  if(!authenticated) return <LoginPage onLogin={handleLogin}/>
 
   let content
   if (role === 'franchisee') content = <FranchiseeApp page={page} onNavigate={navigate} />
