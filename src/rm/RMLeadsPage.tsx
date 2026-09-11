@@ -1,0 +1,128 @@
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { AlertTriangle, BarChart3, CalendarClock, Check, ChevronRight, Clock3, FilterX, LifeBuoy, Plus, Search, Send, ShieldCheck, X } from 'lucide-react'
+import { StatCard } from '../components/UI'
+import { formatINR } from '../data/mockData'
+import { crmLeadStageFlow } from '../franchisee/services/crmStageService'
+import { getLeadAttention, isAwaitingFollowUp } from './leadMonitoring'
+import { RMLeadProgress } from './RMLeadProgress'
+import { rmRepository } from './service'
+import { leadAssistanceService } from './leadAssistanceService'
+import type { RMLead, RMLeadAssistance, RMAssistancePriority, RMAssistanceType } from './types'
+
+interface Props {franchiseContext:string;globalSearch:string;onToast:(message:string)=>void}
+interface RMLeadFilters {search:string;franchiseId:string;stage:string;product:string;source:string;owner:string;dateFrom:string;dateTo:string;attention:string}
+type SummaryFilter='all'|'new'|'active'|'won'|'lost'|'attention'
+
+const makeFilters=(franchiseId='all',search=''):RMLeadFilters=>({search,franchiseId,stage:'all',product:'all',source:'all',owner:'all',dateFrom:'',dateTo:'',attention:'all'})
+const dateTime=(value?:string)=>value?new Date(value).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'Not scheduled'
+const franchiseName=(id:string)=>rmRepository.franchises().find(item=>item.id===id)?.name||'Restricted'
+const matchesSummary=(lead:RMLead,filter:SummaryFilter,needsAttention:boolean)=>{
+ if(filter==='new')return lead.stage==='New'
+ if(filter==='active')return !['New','Won','Lost'].includes(lead.stage)
+ if(filter==='won')return lead.stage==='Won'
+ if(filter==='lost')return lead.stage==='Lost'
+ if(filter==='attention')return needsAttention
+ return true
+}
+
+function Chip({children,tone='neutral'}:{children:ReactNode;tone?:string}){return <span className={`rm-chip ${tone}`}>{children}</span>}
+function Empty({onClear}:{onClear:()=>void}){return <div className="rm-empty rm-lead-empty"><Search/><b>No leads found for the selected filters.</b><span>Clear the current filters to return to the full allocated lead list.</span><button onClick={onClear}><FilterX/> Clear Filters</button></div>}
+
+export function RMLeadsPage({franchiseContext,globalSearch,onToast}:Props){
+ const allLeads=rmRepository.leads()
+ const [filters,setFilters]=useState<RMLeadFilters>(()=>makeFilters(franchiseContext,globalSearch))
+ const [summaryFilter,setSummaryFilter]=useState<SummaryFilter>('all')
+ const [selected,setSelected]=useState<string>()
+ const [assistance,setAssistance]=useState(leadAssistanceService.listAll)
+ useEffect(()=>setFilters(current=>({...current,franchiseId:franchiseContext,search:globalSearch})),[franchiseContext,globalSearch])
+
+ const scoped=allLeads.filter(lead=>franchiseContext==='all'||lead.franchiseId===franchiseContext)
+ const attentionLeads=scoped.filter(lead=>getLeadAttention(lead))
+ const closed=scoped.filter(lead=>['Won','Lost'].includes(lead.stage))
+ const conversion=closed.length?Math.round(scoped.filter(lead=>lead.stage==='Won').length/closed.length*100):0
+ const averageAge=scoped.length?Math.round(scoped.reduce((sum,lead)=>sum+lead.age,0)/scoped.length):0
+ const sources=[...new Set(allLeads.map(lead=>lead.source))]
+ const owners=[...new Set(allLeads.map(lead=>lead.owner))]
+ const products=[...new Set(allLeads.map(lead=>lead.product))]
+ const stages=[...crmLeadStageFlow.active,crmLeadStageFlow.won,crmLeadStageFlow.lost]
+ const rows=allLeads.filter(lead=>{
+  const query=filters.search.trim().toLowerCase(),attention=getLeadAttention(lead),created=lead.createdAt.slice(0,10)
+  const summaryMatch=matchesSummary(lead,summaryFilter,Boolean(attention))
+  return summaryMatch&&(!query||`${lead.id} ${lead.customer} ${lead.mobile} ${lead.email||''} ${lead.owner} ${lead.source} ${franchiseName(lead.franchiseId)}`.toLowerCase().includes(query))
+   &&(filters.franchiseId==='all'||lead.franchiseId===filters.franchiseId)
+   &&(filters.stage==='all'||lead.stage===filters.stage)
+   &&(filters.product==='all'||lead.product===filters.product)
+   &&(filters.source==='all'||lead.source===filters.source)
+   &&(filters.owner==='all'||lead.owner===filters.owner)
+   &&(!filters.dateFrom||created>=filters.dateFrom)&&(!filters.dateTo||created<=filters.dateTo)
+   &&(filters.attention==='all'||filters.attention==='attention'&&Boolean(attention)||attention?.label===filters.attention)
+ })
+ const lead=allLeads.find(item=>item.id===selected)
+ const clearFilters=()=>{setFilters(makeFilters());setSummaryFilter('all')}
+ const resetFilters=()=>{setFilters(makeFilters(franchiseContext,globalSearch));setSummaryFilter('all')}
+
+ return <>
+  <div className="rm-page-header"><div><small>FRANCHISE CRM · MONITORING</small><h1>Franchise Leads</h1><p>Monitor lead progress, follow-ups and stage aging across every franchise allocated to you.</p></div></div>
+  <div className="rm-lead-summary stats-grid stats-6" aria-label="Lead summary quick filters">
+   <div className={summaryFilter==='all'?'active':''}><StatCard active={summaryFilter==='all'} label="Total Leads" value={scoped.length} meta={`${averageAge} days average stage age`} tone="navy" icon={<BarChart3/>} onClick={()=>setSummaryFilter('all')}/></div>
+   <div className={summaryFilter==='new'?'active':''}><StatCard active={summaryFilter==='new'} label="New Leads" value={scoped.filter(item=>item.stage==='New').length} meta="Awaiting first franchise action" tone="blue" icon={<Plus/>} onClick={()=>setSummaryFilter('new')}/></div>
+   <div className={summaryFilter==='active'?'active':''}><StatCard active={summaryFilter==='active'} label="Active / In Progress" value={scoped.filter(item=>!['New','Won','Lost'].includes(item.stage)).length} meta={`${scoped.filter(isAwaitingFollowUp).length} awaiting follow-up`} tone="violet" icon={<Clock3/>} onClick={()=>setSummaryFilter('active')}/></div>
+   <div className={summaryFilter==='won'?'active':''}><StatCard active={summaryFilter==='won'} label="Converted / Won" value={scoped.filter(item=>item.stage==='Won').length} meta={`${conversion}% closed-lead conversion`} tone="green" icon={<Check/>} onClick={()=>setSummaryFilter('won')}/></div>
+   <div className={summaryFilter==='lost'?'active':''}><StatCard active={summaryFilter==='lost'} label="Lost / Closed" value={scoped.filter(item=>item.stage==='Lost').length} meta="Closed by the franchise" tone="red" icon={<X/>} onClick={()=>setSummaryFilter('lost')}/></div>
+   <div className={summaryFilter==='attention'?'active':''}><StatCard active={summaryFilter==='attention'} label="Attention Required" value={attentionLeads.length} meta="Overdue, inactive or aging" tone="amber" icon={<AlertTriangle/>} onClick={()=>setSummaryFilter('attention')}/></div>
+  </div>
+  <div className="rm-lead-filters">
+   <label className="rm-lead-search"><Search/><input value={filters.search} onChange={event=>setFilters({...filters,search:event.target.value})} placeholder="Search lead ID, prospect, mobile..."/></label>
+   <select aria-label="Franchise" value={filters.franchiseId} onChange={event=>setFilters({...filters,franchiseId:event.target.value})}><option value="all">All franchises</option>{rmRepository.franchises().map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select>
+   <select aria-label="Lead stage" value={filters.stage} onChange={event=>setFilters({...filters,stage:event.target.value})}><option value="all">All stages</option>{stages.map(item=><option key={item}>{item}</option>)}</select>
+   <select aria-label="Product" value={filters.product} onChange={event=>setFilters({...filters,product:event.target.value})}><option value="all">All products</option>{products.map(item=><option key={item}>{item}</option>)}</select>
+   <select aria-label="Lead source" value={filters.source} onChange={event=>setFilters({...filters,source:event.target.value})}><option value="all">All sources</option>{sources.map(item=><option key={item}>{item}</option>)}</select>
+   <select aria-label="Lead owner" value={filters.owner} onChange={event=>setFilters({...filters,owner:event.target.value})}><option value="all">All owners</option>{owners.map(item=><option key={item}>{item}</option>)}</select>
+   <label className="rm-lead-date"><span>Created from</span><input type="date" value={filters.dateFrom} onChange={event=>setFilters({...filters,dateFrom:event.target.value})}/></label>
+   <label className="rm-lead-date"><span>Created to</span><input type="date" value={filters.dateTo} onChange={event=>setFilters({...filters,dateTo:event.target.value})}/></label>
+   <select aria-label="Attention status" value={filters.attention} onChange={event=>setFilters({...filters,attention:event.target.value})}><option value="all">All attention states</option><option value="attention">Attention required</option><option>Follow-up Overdue</option><option>Stuck at Stage</option><option>No Recent Activity</option><option>Required action pending</option></select>
+   <div className="rm-lead-filter-actions"><button onClick={clearFilters}><FilterX/> Clear Filters</button><button onClick={resetFilters}>Reset Filters</button></div>
+  </div>
+  <section className="rm-panel rm-lead-list">
+   <div className="rm-panel-head"><div><b>{rows.length} lead{rows.length===1?'':'s'}</b><small>Allocated franchise pipeline · Read-only monitoring</small></div></div>
+   <div className="rm-table-wrap"><table><thead><tr><th>Lead / Prospect</th><th>Contact</th><th>Franchise</th><th>Product</th><th>Source</th><th>Current Stage</th><th>Lead Owner</th><th>Created</th><th>Stage Age</th><th>Last Activity</th><th>Next Follow-up</th><th>RM Support</th><th>Attention</th><th aria-label="Open lead"/></tr></thead><tbody>{rows.map(item=>{const attention=getLeadAttention(item),support=assistance.filter(record=>record.leadId===item.id),pending=support.some(record=>record.followUpStatus==='Pending');return <tr key={item.id} tabIndex={0} aria-label={`Open ${item.id}, ${item.customer}`} className={`rm-lead-row ${attention?`rm-lead-attention ${attention.tone}`:''}`} onClick={event=>{if((event.target as HTMLElement).closest('button,a,input,select,textarea'))return;setSelected(item.id)}} onKeyDown={event=>{if(event.key==='Enter'){event.preventDefault();setSelected(item.id)}}}><td title={`${item.customer} · ${item.id}`}><b>{item.customer}</b><small>{item.id}</small></td><td title={`${item.mobile} · ${item.email||'Email not recorded'}`}>{item.mobile}<small>{item.email||'Email not recorded'}</small></td><td title={`${franchiseName(item.franchiseId)} · ${item.franchiseId}`}><b>{franchiseName(item.franchiseId)}</b><small>{item.franchiseId}</small></td><td title={item.product}>{item.product}<small>{formatINR(item.value)}</small></td><td title={item.source}>{item.source}{item.source==='Inquiry Inbox'&&<small>Source: Inquiry Inbox</small>}</td><td><Chip tone={item.stage==='Won'?'green':item.stage==='Lost'?'red':'blue'}>{item.stage}</Chip></td><td title={item.owner}>{item.owner}</td><td>{item.created}</td><td><b>{item.age} day{item.age===1?'':'s'}</b><small>Since stage entry</small></td><td>{dateTime(item.lastActivityAt)}</td><td title={item.nextFollowUpNote}>{item.nextFollowUpAt?dateTime(item.nextFollowUpAt):'—'}<small>{item.nextFollowUpNote}</small></td><td>{support.length?<Chip tone={pending?'amber':'blue'}>{pending?'Follow-up Pending':`${support.length} Assistance Note${support.length===1?'':'s'}`}</Chip>:<span className="rm-lead-no-support">No Assistance</span>}</td><td>{attention?<Chip tone={attention.tone}>{attention.label}</Chip>:<Chip tone="green">On Track</Chip>}</td><td className="rm-lead-row-chevron" aria-hidden="true"><ChevronRight/></td></tr>})}</tbody></table>{!rows.length&&<Empty onClear={clearFilters}/>}</div>
+  </section>
+  {lead&&<AssistedLeadDrawer lead={lead} records={assistance.filter(record=>record.leadId===lead.id)} close={()=>setSelected(undefined)} onNudge={()=>onToast(`Follow-up nudge recorded for ${lead.id}`)} onAdded={record=>{setAssistance(current=>[record,...current]);onToast(`RM assistance added to ${lead.id}`)}}/>} 
+ </>
+}
+
+function LeadDrawer({lead,close,onNudge}:{lead:RMLead;close:()=>void;onNudge:()=>void}){
+ const attention=getLeadAttention(lead),last=lead.activities[0],current=lead.stageProgress.find(item=>item.stage===lead.stage)
+ const overview:[string,string][]=[['Lead ID',lead.id],['Customer / Prospect',lead.customer],['Mobile',lead.mobile],['Email',lead.email||'Not recorded'],['Product / Service',lead.product],['Expected value',formatINR(lead.value)],['Lead source',lead.source],['Franchise',`${franchiseName(lead.franchiseId)} · ${lead.franchiseId}`],['Lead owner',lead.owner],['Created',dateTime(lead.createdAt)],['Current stage',lead.stage],['Stage age',`${lead.age} day${lead.age===1?'':'s'}`]]
+ const currentInfo:[string,string][]=[['Current stage',lead.stage],['Entered on',dateTime(current?.enteredAt)],['Time at stage',`${lead.age} day${lead.age===1?'':'s'}`],['Last action',last?.action||'No activity recorded'],['Last activity',dateTime(lead.lastActivityAt)],['Next follow-up',dateTime(lead.nextFollowUpAt)]]
+ return <><button className="rm-drawer-scrim" onClick={close} aria-label="Close lead details"/><aside className="rm-drawer wide rm-lead-drawer"><header><div><b>{lead.id} · {lead.customer}</b><small>{franchiseName(lead.franchiseId)} · Read-only lead monitoring</small></div><button onClick={close} aria-label="Close"><X/></button></header><div className="rm-drawer-body"><div className="rm-lead-readonly"><ShieldCheck/><span><b>Monitoring View</b>Lead actions are managed by the Franchise.</span>{attention&&<Chip tone={attention.tone}>{attention.label}</Chip>}</div><DetailSection title="Lead Overview" subtitle="Prospect and franchise ownership"><DetailGrid rows={overview}/></DetailSection><RMLeadProgress lead={lead}/><DetailSection title="Current Stage Information" subtitle="Latest expected franchise activity"><DetailGrid rows={currentInfo}/>{lead.nextFollowUpNote&&<p className="rm-lead-followup-note"><Clock3/>{lead.nextFollowUpNote}</p>}</DetailSection><ActivityTimeline lead={lead}/><button className="rm-primary full rm-lead-nudge" onClick={onNudge}><Send/> Send follow-up nudge to Franchise</button></div></aside></>
+}
+
+function DetailSection({title,subtitle,children}:{title:string;subtitle:string;children:ReactNode}){return <section className="rm-lead-detail-section"><div className="rm-lead-section-head"><div><h3>{title}</h3><p>{subtitle}</p></div></div>{children}</section>}
+function DetailGrid({rows}:{rows:[string,string][]}){return <div className="rm-detail-grid">{rows.map(([label,value])=><div key={label}><small>{label}</small><b>{value}</b></div>)}</div>}
+function ActivityTimeline({lead}:{lead:RMLead}){return <section className="rm-lead-history"><div className="rm-lead-section-head"><div><h3>Activity Timeline / Lead History</h3><p>Chronological Franchise CRM activity</p></div></div>{lead.activities.map(item=><article key={item.id}><i/><div><header><b>{item.action}</b><Chip tone={item.stage==='Won'?'green':item.stage==='Lost'?'red':'blue'}>{item.stage}</Chip></header><p>{item.notes||'No additional notes recorded.'}</p><small>{dateTime(item.occurredAt)} · {item.user}</small></div></article>)}</section>}
+
+function AssistedLeadDrawer({lead,records,close,onNudge,onAdded}:{lead:RMLead;records:RMLeadAssistance[];close:()=>void;onNudge:()=>void;onAdded:(record:RMLeadAssistance)=>void}){
+ const attention=getLeadAttention(lead),last=lead.activities[0],current=lead.stageProgress.find(item=>item.stage===lead.stage)
+ const overview:[string,string][]=[['Lead ID',lead.id],['Customer / Prospect',lead.customer],['Mobile',lead.mobile],['Email',lead.email||'Not recorded'],['Product / Service',lead.product],['Expected value',formatINR(lead.value)],['Lead source',lead.source],['Franchise',`${franchiseName(lead.franchiseId)} · ${lead.franchiseId}`],['Lead owner',lead.owner],['Created',dateTime(lead.createdAt)],['Current stage',lead.stage],['Stage age',`${lead.age} day${lead.age===1?'':'s'}`]]
+ const currentInfo:[string,string][]=[['Current stage',lead.stage],['Entered on',dateTime(current?.enteredAt)],['Time at stage',`${lead.age} day${lead.age===1?'':'s'}`],['Last action',last?.action||'No activity recorded'],['Last activity',dateTime(lead.lastActivityAt)],['Next follow-up',dateTime(lead.nextFollowUpAt)]]
+ return <><button className="rm-drawer-scrim" onClick={close} aria-label="Close lead details"/><aside className="rm-drawer wide rm-lead-drawer"><header><div><b title={`${lead.id} · ${lead.customer}`}>{lead.id} · {lead.customer}</b><small title={`${franchiseName(lead.franchiseId)} · Read-only lead monitoring`}>{franchiseName(lead.franchiseId)} · Read-only lead monitoring</small></div><button onClick={close} aria-label="Close"><X/></button></header><div className="rm-drawer-body"><div className="rm-lead-readonly"><ShieldCheck/><span><b>Monitoring View</b>Lead actions are managed by the Franchise.</span>{attention&&<Chip tone={attention.tone}>{attention.label}</Chip>}</div><DetailSection title="Lead Overview" subtitle="Prospect and franchise ownership"><DetailGrid rows={overview}/></DetailSection><RMLeadProgress lead={lead}/><DetailSection title="Current Stage Information" subtitle="Latest expected franchise activity"><DetailGrid rows={currentInfo}/>{lead.nextFollowUpNote&&<p className="rm-lead-followup-note"><Clock3/>{lead.nextFollowUpNote}</p>}</DetailSection><AssistanceSection lead={lead} records={records} onAdded={onAdded}/><CombinedActivityTimeline lead={lead} records={records}/><button className="rm-primary full rm-lead-nudge" onClick={onNudge}><Send/> Send follow-up nudge to Franchise</button></div></aside></>
+}
+
+const assistanceTypes:RMAssistanceType[]=['Guidance','Franchise Follow-up','Customer Discussion Support','Documentation Support','Product / Policy Guidance','Quotation / Pricing Support','Escalation Support','Internal Coordination','Case Review','Other']
+
+function AssistanceSection({lead,records,onAdded}:{lead:RMLead;records:RMLeadAssistance[];onAdded:(record:RMLeadAssistance)=>void}){
+ const [formOpen,setFormOpen]=useState(false)
+ return <section className="rm-lead-assistance"><div className="rm-lead-section-head"><div><h3>RM Help & Assistance</h3><p>Record guidance, coordination and support provided to the Franchisee for this lead.</p></div><button className="rm-primary rm-assistance-add" onClick={()=>setFormOpen(true)}><Plus/> Add Assistance</button></div>{records.length?<div className="rm-assistance-history">{records.map(record=><article key={record.id}><header><div><Chip tone="blue">{record.assistanceType}</Chip><Chip tone={record.priority==='Urgent'?'red':record.priority==='Important'?'amber':'neutral'}>{record.priority}</Chip></div><time>{dateTime(record.createdAt)}</time></header><p>{record.details}</p><footer><span><b>RM</b>{record.createdBy}</span>{record.followUpRequired?<span><b>Follow-up</b>{dateTime(record.followUpAt)} · {record.followUpStatus}</span>:<span><b>Follow-up</b>Not required</span>}{record.followUpNote&&<span className="wide"><b>Follow-up note</b>{record.followUpNote}</span>}</footer></article>)}</div>:<div className="rm-assistance-empty"><LifeBuoy/><div><b>No RM assistance has been recorded for this lead yet.</b><span>Add guidance or coordination support without changing the Franchisee-owned pipeline.</span></div><button onClick={()=>setFormOpen(true)}>Add Assistance</button></div>}{formOpen&&<AssistanceForm lead={lead} close={()=>setFormOpen(false)} onAdded={record=>{onAdded(record);setFormOpen(false)}}/>}</section>
+}
+
+function AssistanceForm({lead,close,onAdded}:{lead:RMLead;close:()=>void;onAdded:(record:RMLeadAssistance)=>void}){
+ const [type,setType]=useState<RMAssistanceType>('Guidance'),[details,setDetails]=useState(''),[followUp,setFollowUp]=useState(false),[followUpAt,setFollowUpAt]=useState(''),[followUpNote,setFollowUpNote]=useState(''),[priority,setPriority]=useState<RMAssistancePriority>('Normal'),[error,setError]=useState(''),[saving,setSaving]=useState(false)
+ const submit=async(event:FormEvent<HTMLFormElement>)=>{event.preventDefault();if(saving)return;if(!type){setError('Select an assistance type.');return}if(!details.trim()){setError('Assistance details are required.');return}if(followUp&&!followUpAt){setError('Select a follow-up date and time.');return}setSaving(true);setError('');try{const record=await leadAssistanceService.create({leadId:lead.id,assistanceType:type,details,followUpRequired:followUp,followUpAt,followUpNote,priority},{role:'rm',id:rmRepository.currentRM.id,name:rmRepository.currentRM.name});onAdded(record)}catch(reason){setError(reason instanceof Error?reason.message:'Unable to save RM assistance.')}finally{setSaving(false)}}
+ return <div className="rm-modal-backdrop rm-assistance-modal-backdrop" role="presentation"><section className="rm-modal rm-assistance-modal" role="dialog" aria-modal="true" aria-labelledby="rm-assistance-title"><header><div><b id="rm-assistance-title">Add RM Assistance</b><small>{lead.id} · {lead.customer}</small></div><button onClick={close} disabled={saving} aria-label="Close"><X/></button></header><form className="rm-assistance-form" onSubmit={submit} noValidate><label>Assistance Type<select required value={type} onChange={event=>setType(event.target.value as RMAssistanceType)}>{assistanceTypes.map(item=><option key={item}>{item}</option>)}</select></label><label>Priority<select value={priority} onChange={event=>setPriority(event.target.value as RMAssistancePriority)}><option>Normal</option><option>Important</option><option>Urgent</option></select></label><label className="span">Assistance Details<textarea required value={details} onChange={event=>{setDetails(event.target.value);setError('')}} placeholder="Describe the guidance, support or action provided to the Franchisee for this lead..."/></label><label>Follow-up Required?<select value={followUp?'Yes':'No'} onChange={event=>{setFollowUp(event.target.value==='Yes');setError('')}}><option>No</option><option>Yes</option></select></label>{followUp&&<label>Follow-up Date & Time<input type="datetime-local" required value={followUpAt} onChange={event=>{setFollowUpAt(event.target.value);setError('')}}/></label>}{followUp&&<label className="span">Follow-up Note<textarea value={followUpNote} onChange={event=>setFollowUpNote(event.target.value)} placeholder="What should be checked or completed at follow-up?"/></label>}{error&&<p className="rm-assistance-error" role="alert">{error}</p>}<div className="rm-assistance-form-actions"><button type="button" onClick={close} disabled={saving}>Cancel</button><button className="rm-primary" type="submit" disabled={saving}>{saving?'Saving...':'Add Assistance'}</button></div></form></section></div>
+}
+
+function CombinedActivityTimeline({lead,records}:{lead:RMLead;records:RMLeadAssistance[]}){
+ const items=[...lead.activities.map(item=>({...item,kind:'lead' as const})),...records.map(record=>({id:record.id,occurredAt:record.createdAt,action:'RM Assistance Added',user:record.createdBy,notes:`${record.assistanceType}: ${record.details}`,kind:'assistance' as const}))].sort((a,b)=>new Date(b.occurredAt).getTime()-new Date(a.occurredAt).getTime())
+ return <section className="rm-lead-history"><div className="rm-lead-section-head"><div><h3>Activity Timeline / Lead History</h3><p>Franchise pipeline activity and RM assistance in one chronological view</p></div></div>{items.map(item=><article className={item.kind==='assistance'?'assistance':''} key={item.id}><i/><div><header><b>{item.action}</b>{item.kind==='assistance'?<Chip tone="violet">RM Support</Chip>:<Chip tone={item.stage==='Won'?'green':item.stage==='Lost'?'red':'blue'}>{item.stage}</Chip>}</header><p>{item.notes||'No additional notes recorded.'}</p><small>{dateTime(item.occurredAt)} · {item.user}</small></div></article>)}</section>
+}

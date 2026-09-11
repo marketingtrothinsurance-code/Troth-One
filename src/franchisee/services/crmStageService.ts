@@ -1,6 +1,7 @@
 import type { FranchiseeLead, LeadStage, TimelineEvent } from '../types'
 
 type ActiveLeadStage=Exclude<LeadStage,'Won'|'Lost'>
+export const crmLeadStageFlow={active:['New','Contacted','Qualified','Quote Raised'] as const,won:'Won' as const,lost:'Lost' as const}
 const nextStage:Record<ActiveLeadStage,LeadStage>={New:'Contacted',Contacted:'Qualified',Qualified:'Quote Raised','Quote Raised':'Won'}
 const event=(title:string,detail:string):TimelineEvent=>({id:crypto.randomUUID(),title,detail,time:new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}),actor:'Franchise'})
 
