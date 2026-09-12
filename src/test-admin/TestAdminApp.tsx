@@ -1,0 +1,32 @@
+import { useEffect, useMemo, useState } from 'react'
+import { Bell, ChevronDown, LogOut, Menu, Search, ShieldCheck, X } from 'lucide-react'
+import type { Application, Role } from '../types'
+import { roleConfigs } from '../config/roles'
+import { businessSources, loadMasterSnapshot } from './service'
+import type { BusinessSource, TestAdminPage } from './types'
+import { ApplicationsPage, CommissionPage, CommunicationPage, CompliancePage, MarketingTrainingPage, MasterDashboard, pageIcons, RenewalsPage, ReportsPage, SupportPage, TransactionsPage } from './TestAdminPages'
+import { DynamicConfigurationPage as ConfigurationPage, DynamicOnboardingPage as OnboardingPage } from './EntityManagementPages'
+import { TestAdminCustomersPage as CustomersPage } from './TestAdminCustomersPage'
+import { TestAdminCRMPage as CRMPage } from './TestAdminCRMPage'
+import './testAdmin.css'
+
+interface Props {initialPage?:string;applications:Application[];onCreateApplication:(application:Application)=>void;onUpdateApplication:(id:string,patch:Partial<Application>)=>void;onRoleChange:(role:Role)=>void;onLogout:()=>void;onToast:(message:string)=>void}
+const nav:{id:TestAdminPage;label:string}[]=[
+ {id:'dashboard',label:'Master Dashboard'},{id:'crm',label:'CRM — New Business'},{id:'customers',label:'Customers'},{id:'transactions',label:'Transactions — All Products'},
+ {id:'applications',label:'Applications & Case Tracking'},{id:'renewals',label:'Renewals Oversight'},{id:'onboarding',label:'Onboarding Centre'},{id:'configuration',label:'Configuration Centre'},
+ {id:'commission',label:'Commission Configuration'},{id:'marketing-training',label:'Marketing & Training Centre'},{id:'reports',label:'Reports'},{id:'support',label:'Support Desk'},
+ {id:'communication',label:'Communication & Notifications'},{id:'compliance',label:'Compliance & KYC Oversight'}
+]
+const validPages=new Set(nav.map(x=>x.id))
+
+export function TestAdminApp({initialPage='dashboard',applications,onCreateApplication,onUpdateApplication,onRoleChange,onLogout,onToast}:Props){
+ const [page,setPage]=useState<TestAdminPage>(validPages.has(initialPage as TestAdminPage)?initialPage as TestAdminPage:'dashboard'),[source,setSource]=useState<BusinessSource>('All'),[search,setSearch]=useState(''),[mobile,setMobile]=useState(false),[account,setAccount]=useState(false),[notices,setNotices]=useState(false),[revision,setRevision]=useState(0)
+ useEffect(()=>{if(validPages.has(initialPage as TestAdminPage))setPage(initialPage as TestAdminPage)},[initialPage])
+ const snapshot=useMemo(()=>{try{return{data:loadMasterSnapshot(applications),error:''}}catch(reason){return{data:undefined,error:reason instanceof Error?reason.message:'The connected workspace could not be loaded.'}}},[applications,revision]),{data,error}=snapshot
+ const navigate=(next:TestAdminPage,focus?:string)=>{setPage(next);setMobile(false);setNotices(false);setAccount(false);if(focus)setSearch(focus);window.history.pushState({},'',`/test-admin/${next}`);window.scrollTo(0,0)}
+ const shared=data&&{data,source,search,navigate,toast:onToast,refresh:()=>setRevision(value=>value+1),createApplication:onCreateApplication,updateApplication:onUpdateApplication}
+ const content=!data?<State title="Master Admin workspace unavailable" copy={error||'The connected repositories could not be loaded.'}/>:page==='dashboard'?<MasterDashboard {...shared!}/>:page==='crm'?<CRMPage {...shared!}/>:page==='customers'?<CustomersPage {...shared!}/>:page==='transactions'?<TransactionsPage {...shared!}/>:page==='applications'?<ApplicationsPage {...shared!}/>:page==='renewals'?<RenewalsPage {...shared!}/>:page==='onboarding'?<OnboardingPage {...shared!}/>:page==='configuration'?<ConfigurationPage {...shared!}/>:page==='commission'?<CommissionPage {...shared!}/>:page==='marketing-training'?<MarketingTrainingPage {...shared!}/>:page==='reports'?<ReportsPage {...shared!}/>:page==='support'?<SupportPage {...shared!}/>:page==='communication'?<CommunicationPage {...shared!}/>:<CompliancePage {...shared!}/>
+ return <div className="ta-shell"><aside className={`ta-sidebar ${mobile?'open':''}`}><button className="ta-brand" onClick={()=>navigate('dashboard')}><span>T1</span><div><b>TROTH ONE</b><small>TEST-ADMIN</small></div></button><div className="ta-nav-label">MASTER CONTROL CENTRE</div><nav>{nav.map(item=>{const Icon=pageIcons[item.id];return <button key={item.id} className={page===item.id?'active':''} onClick={()=>navigate(item.id)}><Icon/><span>{item.label}</span></button>})}</nav><div className="ta-sidebar-foot"><ShieldCheck/><div><b>Master Admin</b><small>All-network prototype access</small></div></div></aside>{mobile&&<button className="ta-mobile-scrim" onClick={()=>setMobile(false)}/>}<section className="ta-main"><header className="ta-topbar"><button className="ta-icon mobile" onClick={()=>setMobile(true)}><Menu/></button><label className="ta-search"><Search/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search current Master Admin module..."/>{search&&<button onClick={()=>setSearch('')}><X/></button>}</label><div className="ta-top-actions"><label className="ta-source"><small>Business Source</small><select value={source} onChange={e=>setSource(e.target.value as BusinessSource)}>{businessSources.map(x=><option key={x}>{x}</option>)}</select></label><label className="role-switcher"><span>Viewing as</span><select value="test-admin" onChange={e=>onRoleChange(e.target.value as Role)}>{(Object.keys(roleConfigs) as Role[]).map(role=><option value={role} key={role}>{roleConfigs[role].label}</option>)}</select></label><button className="ta-icon" onClick={()=>{setNotices(v=>!v);setAccount(false)}}><Bell/><i/></button><button className="ta-user" onClick={()=>{setAccount(v=>!v);setNotices(false)}}><span>MA</span><div><b>Master Admin</b><small>Head Office Control Centre</small></div><ChevronDown/></button></div>{notices&&<div className="ta-popover"><b>Control-centre notifications</b><small>{data?.workspace.notifications.filter(x=>!x.read).length||0} unread connected notifications</small><button onClick={()=>navigate('communication')}>Open communications</button></div>}{account&&<div className="ta-popover account"><b>Master Admin</b><small>Prototype workspace · Full network lens</small><button onClick={onLogout}><LogOut/> Logout</button></div>}</header><main className="ta-page">{content}</main></section></div>
+}
+
+function State({title,copy}:{title:string;copy:string}){return <div className="ta-state"><ShieldCheck/><b>{title}</b><span>{copy}</span></div>}

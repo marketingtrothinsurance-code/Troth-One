@@ -3,6 +3,9 @@ import type { NavItem, ProductType, Role, RoleConfig } from '../types'
 const allProducts: ProductType[] = ['Insurance', 'Loans', 'Loan Protector', 'Mutual Fund', 'Demat', 'Research', 'Advisory']
 
 export const roleConfigs: Record<Role, RoleConfig> = {
+  'test-admin': {
+    label: 'Test-Admin', shortLabel: 'Test-Admin', user: 'Master Admin', designation: 'Head Office Control Centre', allowedProducts: allProducts, canManage: true, nav: []
+  },
   admin: {
     label: 'Admin', shortLabel: 'Admin', user: 'Aarav Shukla', designation: 'Platform Administrator', allowedProducts: allProducts, canManage: true,
     nav: [

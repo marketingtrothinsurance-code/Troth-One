@@ -1,4 +1,4 @@
-export type Role = 'admin' | 'franchisee' | 'rm' | 'operations' | 'customer'
+export type Role = 'admin' | 'test-admin' | 'franchisee' | 'rm' | 'operations' | 'customer'
 export type ProductType = 'Insurance' | 'Loans' | 'Loan Protector' | 'Mutual Fund' | 'Demat' | 'Research' | 'Advisory'
 export type AppStatus = 'New' | 'In Progress' | 'Action Required' | 'Approved' | 'Completed' | 'Delayed' | 'Escalated' | 'Rejected'
 

@@ -9,6 +9,7 @@ import type { CustomerGoal } from '../data/customerGoalsData'
 interface Props { role: Role; apps: Application[]; customerGoals:CustomerGoal[]; onNavigate:(page:string,filter?:string)=>void; onToast:(s:string)=>void }
 
 const copy: Record<Role,{eyebrow:string,title:string,desc:string}> = {
+  'test-admin':{eyebrow:'MASTER ADMIN',title:'Master control centre',desc:'Combined network oversight across every business source.'},
   admin:{eyebrow:'PLATFORM OVERVIEW',title:'Good morning, Aarav',desc:'Here’s what is happening across Troth One today.'},
   franchisee:{eyebrow:'PARTNER WORKSPACE',title:'Good morning, Neha',desc:'Focus on today’s follow-ups and keep your applications moving.'},
   rm:{eyebrow:'WEST REGION',title:'Good morning, Rohan',desc:'Your assigned partners, priorities and performance at a glance.'},

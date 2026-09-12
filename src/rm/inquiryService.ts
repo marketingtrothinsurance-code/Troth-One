@@ -23,6 +23,7 @@ const change=(id:string,action:RMInquiryAction,remarks:string,followUpAt?:string
 }
 
 export const rmInquiryService={
+ listAll:()=>read(),
  list:()=>read().filter(allowed),
  recordOpen:(id:string)=>change(id,'Inquiry Opened','Inquiry details reviewed by RM.'),
  addAction:(id:string,action:Exclude<RMInquiryAction,'Inquiry Opened'|'Status Changed'>,remarks:string,followUpAt?:string)=>change(id,action,remarks,followUpAt),

@@ -23,6 +23,7 @@ import { customerGoalsRepository } from './services/customerGoalsService'
 import type { CustomerGoal } from './data/customerGoalsData'
 import { RMApp } from './rm/RMApp'
 import { OperationsApp } from './operations/OperationsApp'
+import { TestAdminApp } from './test-admin/TestAdminApp'
 import { AdminCommissionPayout } from './pages/AdminCommissionPayout'
 import { LoginPage } from './auth/LoginPage'
 import { authSession } from './auth/authSession'
@@ -33,6 +34,10 @@ const franchiseePages = new Set(['dashboard','customers','employees','sub-franch
 const isFranchiseePage=(page:string)=>franchiseePages.has(page)||/^customers\/[^/]+\/360$/.test(page)||/^sub-franchisees\/[^/]+$/.test(page)
 const readInitialWorkspace = ():{role:Role;page:string} => {
   let path=window.location.pathname
+  if(path.startsWith('/test-admin')){
+    const page=path.split('/').filter(Boolean)[1]||'dashboard'
+    return {role:'test-admin',page}
+  }
   if(path.startsWith('/test-franchisee')){
     path=path.replace('/test-franchisee','/franchisee')
     window.history.replaceState({},'',path||'/franchisee/dashboard')
@@ -107,18 +112,23 @@ export default function App() {
     if (filter) sessionStorage.setItem('troth-filter', filter)
     if(role==='franchisee'&&isFranchiseePage(next)) window.history.pushState({},'',`/franchisee/${next}`)
     if(role==='admin')window.history.pushState({},'',`/admin/${next}`)
+    if(role==='test-admin')window.history.pushState({},'',`/test-admin/${next}`)
     setPage(next)
   }
 
   const changeRole=(next:Role)=>{
     setRole(next)
     setPage('dashboard')
-    window.history.pushState({},'',next==='franchisee'?'/franchisee/dashboard':next==='rm'?'/rm/dashboard':next==='operations'?'/operations/dashboard':'/')
+    window.history.pushState({},'',next==='franchisee'?'/franchisee/dashboard':next==='rm'?'/rm/dashboard':next==='operations'?'/operations/dashboard':next==='test-admin'?'/test-admin/dashboard':next==='admin'?'/admin/dashboard':'/')
   }
 
   const updateApplication = (id: string, patch: Partial<Application>) => {
     setApplications(current => current.map(a => a.id === id ? {...a, ...patch, updated: '02 Sep 2026'} : a))
     setToast('Application updated successfully')
+  }
+  const createApplication = (application:Application) => {
+    setApplications(current=>[application,...current])
+    setToast(`${application.id} created in the shared application workspace`)
   }
 
   const handleLogout = () => {
@@ -162,6 +172,7 @@ export default function App() {
 
   if(role==='rm') return <><RMApp initialPage={page} onRoleChange={changeRole} onLogout={handleLogout} onToast={setToast}/>{toast && <div className="toast" role="status"><span>✓</span>{toast}</div>}</>
   if(role==='operations') return <><OperationsApp initialPage={page} onRoleChange={changeRole} onLogout={handleLogout} onToast={setToast}/>{toast && <div className="toast" role="status"><span>✓</span>{toast}</div>}</>
+  if(role==='test-admin') return <><TestAdminApp initialPage={page} applications={applications} onCreateApplication={createApplication} onUpdateApplication={updateApplication} onRoleChange={changeRole} onLogout={handleLogout} onToast={setToast}/>{toast && <div className="toast" role="status"><span>✓</span>{toast}</div>}</>
 
   return (
     <AppShell role={role} page={page} onRoleChange={changeRole} onNavigate={navigate} onLogout={handleLogout}>
