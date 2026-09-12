@@ -1,69 +1,572 @@
+// ============================================================
+// Imports
+// ============================================================
+
 import { Plus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { CustomerOnboardingWizard } from '../components/CustomerOnboardingWizard'
-import type { CustomerOnboardingDraft } from '../customer360Types'
-import { legacyCustomerHoldings } from '../customer360HoldingData'
-import type { FranchiseeCustomer } from '../types'
-import { DataTable, FilterSelect, Filters, money, PageHeader, Panel, StatusBadge } from '../components/FranchiseeUI'
 
-const investmentProductIds=new Set(['mf','demat','pms','aif','bonds','fd','ipo','nps','gold','research'])
-const loanProductIds=new Set(['home-loan','personal-loan','business-loan','lap'])
+import { CustomerOnboardingWizard } from '../components/CustomerOnboardingWizard'
+import { legacyCustomerHoldings } from '../customer360HoldingData'
+
+import type { CustomerOnboardingDraft } from '../customer360Types'
+import type { FranchiseeCustomer } from '../types'
+
+import {
+  DataTable,
+  FilterSelect,
+  Filters,
+  money,
+  PageHeader,
+  Panel,
+} from '../components/FranchiseeUI'
+
+
+// ============================================================
+// Product Groups
+// These IDs are used to identify investment and loan holdings
+// from the legacy customer holding data.
+// ============================================================
+
+const investmentProductIds = new Set([
+  'mf',
+  'demat',
+  'pms',
+  'aif',
+  'bonds',
+  'fd',
+  'ipo',
+  'nps',
+  'gold',
+  'research',
+])
+
+const loanProductIds = new Set([
+  'home-loan',
+  'personal-loan',
+  'business-loan',
+  'lap',
+])
+
+
+// ============================================================
+// Component Props
+// ============================================================
 
 interface Props {
-  customers:FranchiseeCustomer[]
-  focusCustomerId?:string
-  onFocusHandled?:()=>void
-  onOpen360:(customerId:string)=>void
-  onAdd:(input:CustomerOnboardingDraft)=>void
-  onSaveDraft:(input:CustomerOnboardingDraft)=>void
-  draft?:CustomerOnboardingDraft
-  onApply:(customer:FranchiseeCustomer)=>void
-  onSupport:(customer:FranchiseeCustomer)=>void
-  onToast:(message:string)=>void
+  customers: FranchiseeCustomer[]
+
+  // Used when another page wants to directly open
+  // a particular customer's 360 profile.
+  focusCustomerId?: string
+
+  onFocusHandled?: () => void
+
+  // Opens the complete Customer 360 view.
+  onOpen360: (customerId: string) => void
+
+  // Creates a new customer.
+  onAdd: (input: CustomerOnboardingDraft) => void
+
+  // Saves incomplete onboarding information locally.
+  onSaveDraft: (input: CustomerOnboardingDraft) => void
+
+  draft?: CustomerOnboardingDraft
+
+  // Currently not used on this page,
+  // but kept because it is part of the page interface.
+  onApply: (customer: FranchiseeCustomer) => void
+  onSupport: (customer: FranchiseeCustomer) => void
+
+  onToast: (message: string) => void
 }
 
-export function CustomersPage({customers,focusCustomerId,onFocusHandled,onOpen360,onAdd,onSaveDraft,draft,onApply:_,onSupport:__,onToast}:Props){
-  const [search,setSearch]=useState('')
-  const [kyc,setKyc]=useState('All KYC')
-  const [adding,setAdding]=useState(false)
-  const rows=useMemo(()=>customers.filter(customer=>(kyc==='All KYC'||customer.kyc===kyc)&&`${customer.name} ${customer.id} ${customer.mobile} ${customer.email}`.toLowerCase().includes(search.toLowerCase())),[customers,search,kyc])
 
-  useEffect(()=>{
-    if(!focusCustomerId)return
-    if(customers.some(item=>item.id===focusCustomerId))onOpen360(focusCustomerId)
+// ============================================================
+// Customers Page
+// ============================================================
+
+export function CustomersPage({
+  customers,
+  focusCustomerId,
+  onFocusHandled,
+  onOpen360,
+  onAdd,
+  onSaveDraft,
+  draft,
+  onApply: _,
+  onSupport: __,
+  onToast,
+}: Props) {
+  // ----------------------------------------------------------
+  // Local Page State
+  // ----------------------------------------------------------
+
+  const [search, setSearch] = useState('')
+  const [kyc, setKyc] = useState('All KYC')
+  const [adding, setAdding] = useState(false)
+
+
+  // ----------------------------------------------------------
+  // Filter Customers
+  //
+  // Customers can be searched using:
+  // - Name
+  // - Customer ID
+  // - Mobile number
+  // - Email
+  //
+  // They can also be filtered by KYC status.
+  // ----------------------------------------------------------
+
+  const rows = useMemo(() => {
+    const normalizedSearch = search.toLowerCase()
+
+    return customers.filter((customer) => {
+      const matchesKyc =
+        kyc === 'All KYC' || customer.kyc === kyc
+
+      const searchableText = `
+        ${customer.name}
+        ${customer.id}
+        ${customer.mobile}
+        ${customer.email || ''}
+      `.toLowerCase()
+
+      const matchesSearch =
+        searchableText.includes(normalizedSearch)
+
+      return matchesKyc && matchesSearch
+    })
+  }, [customers, search, kyc])
+
+
+  // ----------------------------------------------------------
+  // Automatically Open Customer 360
+  //
+  // If focusCustomerId is received from another page,
+  // automatically open that customer's 360 profile.
+  // ----------------------------------------------------------
+
+  useEffect(() => {
+    if (!focusCustomerId) {
+      return
+    }
+
+    const customerExists = customers.some(
+      (customer) => customer.id === focusCustomerId
+    )
+
+    if (customerExists) {
+      onOpen360(focusCustomerId)
+    }
+
     onFocusHandled?.()
-  },[focusCustomerId,customers,onFocusHandled,onOpen360])
+  }, [
+    focusCustomerId,
+    customers,
+    onFocusHandled,
+    onOpen360,
+  ])
 
-  return <div className="franchisee-customers-page">
-    <PageHeader eyebrow="CUSTOMER RELATIONSHIPS" title="Customers" description="A clear view of each customer's profile, investments, loans and relationship with your franchise." actions={<button className="tf-primary" onClick={()=>setAdding(true)}><Plus/> Add New Customer</button>}/>
-    <Panel title="Customer Directory" subtitle={`${rows.length} customers`}>
-      <Filters search={search} onSearch={setSearch}><FilterSelect label="KYC" value={kyc} onChange={setKyc} options={['All KYC','Verified','Pending','Expired']}/></Filters>
-      <DataTable headers={['Customer Name','Contact','Direct / Sub-Franchisee','Profile','Investments','Loans','Open 360']} empty={!rows.length}>
-        {rows.map(customer=>{
-          const profile=customer.profile360
-          const legacy=legacyCustomerHoldings[customer.id]||[]
-          const investments=profile?.investments||[]
-          const loans=profile?.loans||[]
-          const legacyInvestments=legacy.filter(item=>investmentProductIds.has(item.productId))
-          const legacyLoans=legacy.filter(item=>loanProductIds.has(item.productId))
-          const investmentValue=investments.length?investments.reduce((sum,item)=>sum+(item.currentValue||0),0):legacyInvestments.reduce((sum,item)=>sum+(item.currentValue||0),0)
-          const loanOutstanding=loans.length?loans.reduce((sum,item)=>sum+(item.outstandingAmount||0),0):legacyLoans.reduce((sum,item)=>sum+(item.currentValue||0),0)
-          const investmentCount=investments.length||legacyInvestments.length
-          const loanCount=loans.length||legacyLoans.length
-          const loanType=loans[0]?.loanType||customer.products.find(product=>/loan/i.test(product)&&!/protector/i.test(product))
-          const occupation=profile?.profile.occupation||profile?.basic.industry
-          return <tr key={customer.id}>
-            <td><button className="tf-link-stack" onClick={()=>onOpen360(customer.id)}><b>{customer.name}</b><small>{customer.id}</small></button></td>
-            <td><b>{customer.mobile}</b><small>{customer.email||'Email not recorded'}</small></td>
-            <td><b>Direct</b><small>Franchisee customer</small></td>
-            <td><b>{profile?.customerType||'Not recorded'}</b><small className="tf-customer-profile"><StatusBadge>{customer.kyc} KYC</StatusBadge>{occupation&&<span>{occupation}</span>}</small></td>
-            <td>{investmentCount?<><b>{investmentValue?`${money(investmentValue)} Current Value`:`${investmentCount} Product${investmentCount===1?'':'s'}`}</b><small>{investmentCount} investment{investmentCount===1?'':'s'}</small></>:<span className="tf-customer-none">No Investments</span>}</td>
-            <td>{loanCount?<><b>{loanOutstanding?`${money(loanOutstanding)} Outstanding`:`${loanCount} Active Loan${loanCount===1?'':'s'}`}</b><small>{loanType||`${loanCount} loan${loanCount===1?'':'s'}`}</small></>:<span className="tf-customer-none">No Loans</span>}</td>
-            <td><button className="tf-customer-open" onClick={()=>onOpen360(customer.id)}>Open 360</button></td>
-          </tr>
-        })}
-      </DataTable>
-    </Panel>
-    {adding&&<CustomerOnboardingWizard initial={draft} onClose={()=>setAdding(false)} onSaveDraft={value=>{onSaveDraft(value);onToast('Customer onboarding draft saved locally')}} onCreate={value=>{onAdd(value);setAdding(false)}}/>}
-  </div>
+
+  // ==========================================================
+  // Page UI
+  // ==========================================================
+
+  return (
+    <div className="franchisee-customers-page">
+
+      {/* ======================================================
+          PAGE HEADER
+      ====================================================== */}
+
+      <PageHeader
+        eyebrow="CUSTOMER RELATIONSHIPS"
+        title="Customers"
+        description="A clear view of each customer's profile, investments, loans and relationship with your franchise."
+        actions={
+          <button
+            className="tf-primary"
+            onClick={() => setAdding(true)}
+          >
+            <Plus />
+            Add New Customer
+          </button>
+        }
+      />
+
+
+      {/* ======================================================
+          CUSTOMER DIRECTORY
+      ====================================================== */}
+
+      <Panel
+        title="Customer Directory"
+        subtitle={`${rows.length} customers`}
+      >
+
+        {/* ----------------------------------------------------
+            Search and KYC Filters
+        ---------------------------------------------------- */}
+
+        <Filters
+          search={search}
+          onSearch={setSearch}
+        >
+          <FilterSelect
+            label="KYC"
+            value={kyc}
+            onChange={setKyc}
+            options={[
+              'All KYC',
+              'Verified',
+              'Pending',
+              'Expired',
+            ]}
+          />
+        </Filters>
+
+
+        {/* ----------------------------------------------------
+            Customer Table
+        ---------------------------------------------------- */}
+
+        <DataTable
+          headers={[
+            'Customer Name',
+            'Contact',
+            'Direct / Sub-Franchisee',
+            'Insurance Premium',
+            'Investments',
+            'Loans',
+            'Open 360',
+          ]}
+          empty={!rows.length}
+        >
+
+          {rows.map((customer) => {
+
+            // =================================================
+            // CUSTOMER DATA
+            // =================================================
+
+            const profile = customer.profile360
+
+            // Legacy holdings are used as a fallback where
+            // Customer 360 data is not yet available.
+            const legacy =
+              legacyCustomerHoldings[customer.id] || []
+
+
+            // =================================================
+            // INSURANCE
+            // =================================================
+
+            // Only active policies should contribute to the
+            // displayed Insurance Premium.
+            const activePolicies =
+              (profile?.policies || []).filter((policy) => {
+                const status = policy.status.toLowerCase()
+
+                return ![
+                  'expired',
+                  'lapsed',
+                ].includes(status)
+              })
+
+            // Add premium amount from all active policies.
+            const insurancePremium =
+              activePolicies.reduce(
+                (total, policy) =>
+                  total + (policy.premiumAmount || 0),
+                0
+              )
+
+
+            // =================================================
+            // INVESTMENTS
+            // =================================================
+
+            const investments =
+              profile?.investments || []
+
+            // Legacy investment products are used when the
+            // newer Customer 360 investment data is unavailable.
+            const legacyInvestments =
+              legacy.filter((holding) =>
+                investmentProductIds.has(
+                  holding.productId
+                )
+              )
+
+            // Prefer Customer 360 investment data.
+            // Otherwise, use legacy holdings.
+            const investmentCount =
+              investments.length ||
+              legacyInvestments.length
+
+            const investmentValue =
+              investments.length > 0
+                ? investments.reduce(
+                    (total, investment) =>
+                      total +
+                      (investment.currentValue || 0),
+                    0
+                  )
+                : legacyInvestments.reduce(
+                    (total, investment) =>
+                      total +
+                      (investment.currentValue || 0),
+                    0
+                  )
+
+
+            // =================================================
+            // LOANS
+            // =================================================
+
+            const loans =
+              profile?.loans || []
+
+            const legacyLoans =
+              legacy.filter((holding) =>
+                loanProductIds.has(
+                  holding.productId
+                )
+              )
+
+            const loanCount =
+              loans.length ||
+              legacyLoans.length
+
+
+            // -------------------------------------------------
+            // Loan Name / Loan Type
+            //
+            // First preference:
+            // Customer 360 loan type.
+            //
+            // Second preference:
+            // Customer product containing "loan".
+            //
+            // Loan Protector is intentionally excluded.
+            // -------------------------------------------------
+
+            const loanType =
+              loans[0]?.loanType ||
+              customer.products.find(
+                (product) =>
+                  /loan/i.test(product) &&
+                  !/protector/i.test(product)
+              )
+
+
+            // -------------------------------------------------
+            // Loan Amount
+            //
+            // First preference: Original loan amount
+            // Second: Outstanding amount
+            // Third: Legacy loan amount
+            // -------------------------------------------------
+
+            const loanAmount =
+              loans[0]?.originalAmount ||
+              loans[0]?.outstandingAmount ||
+              legacyLoans[0]?.investedOrCover
+
+
+            // =================================================
+            // CUSTOMER ROW
+            // =================================================
+
+            return (
+              <tr key={customer.id}>
+
+                {/* ---------------------------------------------
+                    Customer Name
+                --------------------------------------------- */}
+
+                <td>
+                  <button
+                    className="tf-link-stack"
+                    onClick={() =>
+                      onOpen360(customer.id)
+                    }
+                  >
+                    <b>{customer.name}</b>
+                    <small>{customer.id}</small>
+                  </button>
+                </td>
+
+
+                {/* ---------------------------------------------
+                    Contact Details
+                --------------------------------------------- */}
+
+                <td>
+                  <b>{customer.mobile}</b>
+
+                  <small>
+                    {customer.email ||
+                      'Email not recorded'}
+                  </small>
+                </td>
+
+
+                {/* ---------------------------------------------
+                    Customer Relationship
+                --------------------------------------------- */}
+
+                <td>
+                  <b>Direct</b>
+                  <small>
+                    Franchisee customer
+                  </small>
+                </td>
+
+
+                {/* ---------------------------------------------
+                    Insurance Premium
+                --------------------------------------------- */}
+
+                <td>
+                  {insurancePremium ? (
+                    <b>
+                      {money(insurancePremium)}
+
+                      {activePolicies.length > 1
+                        ? ' Total Premium'
+                        : ''}
+                    </b>
+                  ) : (
+                    <span className="tf-customer-none">
+                      —
+                    </span>
+                  )}
+                </td>
+
+
+                {/* ---------------------------------------------
+                    Investments
+                --------------------------------------------- */}
+
+                <td>
+                  {investmentCount ? (
+                    <>
+                      <b>
+                        {investmentValue
+                          ? `${money(
+                              investmentValue
+                            )} Current Value`
+                          : `${investmentCount} ${
+                              investmentCount === 1
+                                ? 'Product'
+                                : 'Products'
+                            }`}
+                      </b>
+
+                      <small>
+                        {investmentCount}{' '}
+                        {investmentCount === 1
+                          ? 'investment'
+                          : 'investments'}
+                      </small>
+                    </>
+                  ) : (
+                    <span className="tf-customer-none">
+                      No Investments
+                    </span>
+                  )}
+                </td>
+
+
+                {/* ---------------------------------------------
+                    Loans
+
+                    Loan name is shown first.
+                    Loan amount is displayed underneath.
+                --------------------------------------------- */}
+
+                <td>
+                  {loanCount ? (
+                    <>
+                      <b>
+                        {loanType ||
+                          `${loanCount} Active ${
+                            loanCount === 1
+                              ? 'Loan'
+                              : 'Loans'
+                          }`}
+                      </b>
+
+                      <small>
+                        {loanAmount
+                          ? money(loanAmount)
+                          : '—'}
+                      </small>
+                    </>
+                  ) : (
+                    <span className="tf-customer-none">
+                      No Loans
+                    </span>
+                  )}
+                </td>
+
+
+                {/* ---------------------------------------------
+                    Open Customer 360
+                --------------------------------------------- */}
+
+                <td>
+                  <button
+                    className="tf-customer-open"
+                    onClick={() =>
+                      onOpen360(customer.id)
+                    }
+                  >
+                    Open 360
+                  </button>
+                </td>
+
+              </tr>
+            )
+          })}
+        </DataTable>
+      </Panel>
+
+
+      {/* ======================================================
+          ADD CUSTOMER ONBOARDING WIZARD
+      ====================================================== */}
+
+      {adding && (
+        <CustomerOnboardingWizard
+
+          // Load previously saved draft if available.
+          initial={draft}
+
+          onClose={() => {
+            setAdding(false)
+          }}
+
+          // Save onboarding data without creating
+          // the customer immediately.
+          onSaveDraft={(value) => {
+            onSaveDraft(value)
+
+            onToast(
+              'Customer onboarding draft saved locally'
+            )
+          }}
+
+          // Create customer and close the onboarding modal.
+          onCreate={(value) => {
+            onAdd(value)
+            setAdding(false)
+          }}
+        />
+      )}
+
+    </div>
+  )
 }

@@ -4,6 +4,7 @@
 .franchisee-renewals .tf-page-head h1{margin:7px 0 6px;color:var(--fr-ink);font:800 var(--font-page-title)/1.2 Manrope,sans-serif}
 .franchisee-renewals .tf-page-head p{color:var(--fr-muted);font-size:var(--font-body)}
 .fr-renewal-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:24px}
+.fr-renewal-kpi{min-width:0;border-radius:12px}.fr-renewal-kpi .tf-metric{width:100%;cursor:pointer;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}.fr-renewal-kpi .tf-metric:hover{border-color:#aebce4;box-shadow:0 7px 20px rgba(25,39,65,.09);transform:translateY(-1px)}.fr-renewal-kpi .tf-metric:focus-visible{outline:3px solid #b8c8fa;outline-offset:2px}.fr-renewal-kpi.active .tf-metric{border-color:#6482df;background:#f8faff;box-shadow:0 0 0 2px #dfe7ff,0 6px 18px rgba(34,69,170,.08)}
 .fr-renewal-kpis .tf-metric{height:132px;padding:18px 17px;border-color:var(--fr-line);background:#fff;box-shadow:0 3px 12px rgba(25,39,65,.035)}
 .fr-renewal-kpis .tf-metric:before{content:'';position:absolute;top:0;left:17px;width:31px;height:3px;background:var(--fr-blue)}
 .fr-renewal-kpis .tf-metric.teal:before{background:#168562}.fr-renewal-kpis .tf-metric.orange:before{background:#c87916}.fr-renewal-kpis .tf-metric.red:before{background:#c84747}
