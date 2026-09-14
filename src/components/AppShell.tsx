@@ -12,7 +12,8 @@ export function AppShell({role,page,onRoleChange,onNavigate,onLogout,children}: 
   const [accountMenu,setAccountMenu] = useState(false)
   const config = roleConfigs[role]
   const [openGroups,setOpenGroups] = useState<Record<string,boolean>>({})
-  useEffect(()=>{const active=config.nav.find(item=>item.children?.some(child=>child.id===page));if(active)setOpenGroups(current=>({...current,[active.id]:true}))},[config.nav,page])
+  const childActive=(id:string)=>page===id||(role==='admin'&&page.startsWith(`${id}/`))
+  useEffect(()=>{const active=config.nav.find(item=>item.children?.some(child=>childActive(child.id)));if(active)setOpenGroups(current=>({...current,[active.id]:true}))},[config.nav,page])
   const iconMap = {BadgeCheck,Bell,Boxes,Calculator,CalendarClock,ChartNoAxesCombined,Circle,Compass,Contact,Files,FolderCheck,HandCoins,LayoutDashboard,LifeBuoy,ListChecks,Megaphone,Menu,MessagesSquare,PanelLeftClose,PanelLeftOpen,Search,Settings,Store,UserRound,UserRoundPlus,Users,WalletCards,Workflow}
   const go = (id:string) => { onNavigate(id); setMobileOpen(false); setAccountMenu(false) }
   return <div className={`app-shell ${collapsed ? 'sidebar-collapsed' : ''}`}>
@@ -26,13 +27,13 @@ export function AppShell({role,page,onRoleChange,onNavigate,onLogout,children}: 
         {config.nav.map(item => {
           const Icon = iconMap[item.icon as keyof typeof iconMap] || Circle
           if(item.children){
-            const active=item.children.some(child=>child.id===page)
+            const active=item.children.some(child=>childActive(child.id))
             const open=Boolean(openGroups[item.id])
             return <div className={`nav-group ${open?'open':''}`} key={item.id}>
               <button className={active?'active':''} onClick={()=>setOpenGroups(current=>({...current,[item.id]:!current[item.id]}))} title={item.label} aria-expanded={open}>
                 <Icon size={19}/>{!collapsed&&<><span>{item.label}</span><ChevronDown className="nav-chevron" size={16}/></>}
               </button>
-              {open&&<div className="nav-submenu">{item.children.map(child=>{const ChildIcon=iconMap[child.icon as keyof typeof iconMap]||Circle;return <button key={child.id} className={page===child.id?'active':''} onClick={()=>go(child.id)} title={child.label}><ChildIcon size={16}/>{!collapsed&&<span>{child.label}</span>}</button>})}</div>}
+              {open&&<div className="nav-submenu">{item.children.map(child=>{const ChildIcon=iconMap[child.icon as keyof typeof iconMap]||Circle;return <button key={child.id} className={childActive(child.id)?'active':''} onClick={()=>go(child.id)} title={child.label}><ChildIcon size={16}/>{!collapsed&&<span>{child.label}</span>}</button>})}</div>}
             </div>
           }
           return <button key={item.id} className={page === item.id||(item.id==='customers'&&page.startsWith('customers/')) ? 'active' : ''} onClick={() => go(item.id)} title={item.label}>

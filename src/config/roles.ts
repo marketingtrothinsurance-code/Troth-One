@@ -9,11 +9,11 @@ export const roleConfigs: Record<Role, RoleConfig> = {
   admin: {
     label: 'Admin', shortLabel: 'Admin', user: 'Aarav Shukla', designation: 'Platform Administrator', allowedProducts: allProducts, canManage: true,
     nav: [
-      ['dashboard','Dashboard','LayoutDashboard'], ['franchisees','Franchisees','Store'], ['users','Users & Access','Users'],
+      ['dashboard','Dashboard','LayoutDashboard'], ['users','Users & Access','Users'],
       ['customers','Customers','Contact'], ['applications','Applications','Files'], ['products','Products & Partners','Boxes'],
       ['operations','Operations','Workflow'], ['commission-payout','Commission & Payout','HandCoins'], ['support','Support','LifeBuoy'], ['reports','Reports & MIS','ChartNoAxesCombined'],
       ['administration','Administration','Settings']
-    ].map(([id,label,icon]) => ({id,label,icon}))
+    ].map(([id,label,icon]):NavItem => ({id,label,icon})).flatMap((item,index)=>index===1?[{id:'onboarding',label:'Onboarding',icon:'UserRoundPlus',children:[{id:'onboarding/employees',label:'Employee',icon:'Users'},{id:'onboarding/franchisees',label:'Franchisee',icon:'Store'},{id:'onboarding/agents',label:'Agents',icon:'BadgeCheck'}]},item]:[item])
   },
   franchisee: {
     label: 'Franchisee', shortLabel: 'Franchisee', user: 'Troth Meridian Financial Services', designation: 'FR-GJ-0418 · Ahmedabad', allowedProducts: allProducts, canManage: true,
