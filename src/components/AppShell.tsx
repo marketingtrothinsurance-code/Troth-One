@@ -16,7 +16,7 @@ export function AppShell({role,page,onRoleChange,onNavigate,onLogout,children}: 
   useEffect(()=>{const active=config.nav.find(item=>item.children?.some(child=>childActive(child.id)));if(active)setOpenGroups(current=>({...current,[active.id]:true}))},[config.nav,page])
   const iconMap = {BadgeCheck,Bell,Boxes,Calculator,CalendarClock,ChartNoAxesCombined,Circle,Compass,Contact,Files,FolderCheck,HandCoins,LayoutDashboard,LifeBuoy,ListChecks,Megaphone,Menu,MessagesSquare,PanelLeftClose,PanelLeftOpen,Search,Settings,Store,UserRound,UserRoundPlus,Users,WalletCards,Workflow}
   const go = (id:string) => { onNavigate(id); setMobileOpen(false); setAccountMenu(false) }
-  return <div className={`app-shell ${collapsed ? 'sidebar-collapsed' : ''}`}>
+  return <div className={`app-shell role-${role} ${collapsed ? 'sidebar-collapsed' : ''}`}>
     <aside className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
       <div className="brand" onClick={() => go('dashboard')}>
         <div className="brand-mark">T1</div>

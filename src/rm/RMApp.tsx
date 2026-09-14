@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { AlertTriangle, ArrowLeft, BarChart3, Bell, BookOpenCheck, Boxes, Building2, CalendarDays, Camera, Check, ChevronDown, ChevronRight, CircleDollarSign, Download, Edit3, Eye, FileText, Headphones, LayoutDashboard, LifeBuoy, LogOut, Menu, MessageSquareText, Megaphone, Plus, Search, Send, ShieldCheck, Store, UserRound, Users, X } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, BarChart3, Bell, BookOpenCheck, Building2, CalendarDays, Camera, ChartNoAxesCombined, Check, ChevronDown, ChevronRight, CircleDollarSign, Download, Edit3, Eye, FileText, Headphones, LayoutDashboard, LifeBuoy, LogOut, Menu, MessageSquareText, Megaphone, Plus, Search, Send, ShieldCheck, Store, UserRound, Users, X } from 'lucide-react'
 import type { ProductType, Role } from '../types'
 import { formatINR } from '../data/mockData'
 import { StatCard } from '../components/UI'
@@ -14,7 +14,7 @@ import './rm.css'
 
 interface Props { initialPage?:string; onRoleChange:(role:Role)=>void; onLogout:()=>void; onToast:(message:string)=>void }
 const nav:{id:RMModule;label:string;icon:typeof LayoutDashboard}[]=[
- {id:'dashboard',label:'Dashboard',icon:LayoutDashboard},{id:'customers',label:'Customers',icon:Users},{id:'leads',label:'Franchise CRM / Leads',icon:BarChart3},{id:'applications',label:'Application Tracking',icon:FileText},{id:'renewals',label:'Renewals',icon:CalendarDays},{id:'commission-payout',label:'Commission & Payouts',icon:CircleDollarSign},{id:'support',label:'Support & Service Desk',icon:LifeBuoy},{id:'franchises',label:'My Franchises',icon:Store},{id:'communications',label:'Communication & Notifications',icon:MessageSquareText},{id:'marketing',label:'Marketing Material',icon:Megaphone},{id:'training',label:'Training & Knowledge',icon:BookOpenCheck},{id:'reports',label:'Reports',icon:Boxes}
+ {id:'dashboard',label:'Dashboard',icon:LayoutDashboard},{id:'customers',label:'Customers',icon:Users},{id:'leads',label:'Franchise CRM / Leads',icon:BarChart3},{id:'applications',label:'Application Tracking',icon:FileText},{id:'renewals',label:'Renewals',icon:CalendarDays},{id:'commission-payout',label:'Commission & Payouts',icon:CircleDollarSign},{id:'support',label:'Support & Service Desk',icon:LifeBuoy},{id:'franchises',label:'My Franchises',icon:Store},{id:'communications',label:'Communication & Notifications',icon:MessageSquareText},{id:'marketing',label:'Marketing Material',icon:Megaphone},{id:'training',label:'Training & Knowledge',icon:BookOpenCheck},{id:'reports',label:'Reports',icon:ChartNoAxesCombined}
 ]
 const products:ProductType[]=['Insurance','Loans','Loan Protector','Mutual Fund','Demat','Research','Advisory']
 const emptyFilters:RMFilters={search:'',franchiseId:'all',product:'all',status:'all'}

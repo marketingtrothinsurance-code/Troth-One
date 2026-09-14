@@ -1,5 +1,5 @@
 import { Children, useState, type FormEvent, type ReactNode } from 'react'
-import { AlertTriangle, ArrowRight, BadgeCheck, BriefcaseBusiness, CheckCircle2, CircleDollarSign, Clock3, Download, Eye, FileCheck2, Headphones, Inbox, Network, Search, ShieldCheck, Users, X } from 'lucide-react'
+import { AlertTriangle, ArrowRight, BadgeCheck, BriefcaseBusiness, ChartNoAxesCombined, CheckCircle2, CircleDollarSign, Clock3, Download, Eye, FileCheck2, Headphones, Inbox, Network, Search, ShieldCheck, Users, X } from 'lucide-react'
 import type { Application } from '../types'
 import { commissionRepository, type CommissionSlab } from '../data/adminCommissionPayoutData'
 import { formatINR } from '../data/mockData'
@@ -60,4 +60,4 @@ function CaseDrawer({item,close,update}:{item:Application;close:()=>void;update:
 
 function ConfirmAction({title,copy,confirm,cancel}:{title:string;copy:string;confirm:()=>void;cancel:()=>void}){return <div className="ta-confirm-wrap"><button className="ta-confirm-scrim" onClick={cancel}/><section className="ta-confirm"><AlertTriangle/><h3>{title}</h3><p>{copy}</p><footer><button onClick={cancel}>Cancel</button><button className="ta-primary" onClick={confirm}>Confirm</button></footer></section></div>}
 
-export const pageIcons={dashboard:Network,crm:Inbox,customers:Users,transactions:BriefcaseBusiness,applications:FileCheck2,renewals:Clock3,onboarding:BadgeCheck,configuration:ShieldCheck,commission:CircleDollarSign,'marketing-training':BriefcaseBusiness,reports:Download,support:Headphones,communication:Inbox,compliance:AlertTriangle}
+export const pageIcons={dashboard:Network,crm:Inbox,customers:Users,transactions:BriefcaseBusiness,applications:FileCheck2,renewals:Clock3,onboarding:BadgeCheck,configuration:ShieldCheck,commission:CircleDollarSign,'marketing-training':BriefcaseBusiness,reports:ChartNoAxesCombined,support:Headphones,communication:Inbox,compliance:AlertTriangle}

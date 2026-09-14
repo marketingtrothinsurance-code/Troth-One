@@ -1,0 +1,616 @@
+/*
+ * TROTH ONE shared visual system
+ * Source of truth: the approved Franchisee tokens in franchisee.css.
+ * The Franchisee workspace is intentionally excluded so its rendering remains
+ * unchanged; every other role consumes this shared contract.
+ */
+:root {
+  --troth-font: "DM Sans", system-ui, sans-serif;
+  --troth-heading-font: Manrope, sans-serif;
+  --troth-navy: #071c4c;
+  --troth-blue: #2757e7;
+  --troth-ink: #10172b;
+  --troth-muted: #687087;
+  --troth-line: #e3e7f0;
+  --troth-soft: #f5f7fb;
+  --troth-page: #f3f6fb;
+  --troth-surface: #fff;
+  --troth-green: #12866f;
+  --troth-amber: #d97706;
+  --troth-red: #c92d43;
+  --troth-page-title: 30px;
+  --troth-section-title: 18px;
+  --troth-card-title: 17px;
+  --troth-card-value: 25px;
+  --troth-body: 15px;
+  --troth-label: 14px;
+  --troth-control: 14px;
+  --troth-input: 15px;
+  --troth-table-head: 13px;
+  --troth-table-body: 14px;
+  --troth-helper: 13px;
+  --troth-badge: 12px;
+  --troth-radius: 8px;
+  --troth-card-radius: 12px;
+  --troth-control-height: 39px;
+  --troth-button-height: 36px;
+  --troth-icon: 18px;
+  --troth-icon-small: 14px;
+}
+
+:is(.app-shell:not(.role-franchisee), .rm-shell, .ops-shell, .ta-shell) {
+  --navy: var(--troth-navy);
+  --blue: var(--troth-blue);
+  --muted: var(--troth-muted);
+  --border: var(--troth-line);
+  --green: var(--troth-green);
+  --amber: var(--troth-amber);
+  --red: var(--troth-red);
+  --c: var(--troth-blue);
+  --font-page-title: var(--troth-page-title);
+  --font-section-title: var(--troth-section-title);
+  --font-card-title: var(--troth-card-title);
+  --font-body: var(--troth-body);
+  --font-small: var(--troth-helper);
+  --font-label: var(--troth-label);
+  --font-table: var(--troth-table-body);
+  --font-table-head: var(--troth-table-head);
+  --font-button: var(--troth-control);
+  --font-kpi: var(--troth-card-value);
+  --font-status: var(--troth-badge);
+  --line-body: 1.55;
+  --line-tight: 1.35;
+  color: var(--troth-ink);
+  background: var(--troth-page);
+  font-family: var(--troth-font);
+}
+
+:is(.admin-customers, .admin-customer360-page, .admin-customer-form-page) {
+  --customer-navy: var(--troth-navy);
+  --customer-blue: var(--troth-blue);
+  --customer-soft: var(--troth-soft);
+  --customer-border: var(--troth-line);
+}
+
+.admin-onboarding-page {
+  --ob-blue: var(--troth-blue);
+  --ob-navy: var(--troth-navy);
+  --ob-border: var(--troth-line);
+}
+
+.admin-administration {
+  --admin-ink: var(--troth-ink);
+  --admin-line: var(--troth-line);
+  --admin-soft: var(--troth-soft);
+}
+
+.admin-commission-payout {
+  --cp-ink: var(--troth-ink);
+  --cp-subtle: var(--troth-muted);
+  --cp-soft: var(--troth-soft);
+  --cp-accent: var(--troth-blue);
+  --cp-line: var(--troth-line);
+}
+
+/* Role shells are the inheritance boundary. Controls already inherit from their
+   shell in each implementation, so no universal descendant override is needed. */
+:is(.app-shell:not(.role-franchisee), .rm-shell, .ops-shell, .ta-shell) {
+  font-family: var(--troth-font);
+  font-size: var(--troth-body);
+  line-height: 1.55;
+}
+
+:is(.app-shell:not(.role-franchisee) .main-area > main, .rm-page-wrap, .ops-page, .ta-page) {
+  max-width: 1560px;
+  padding: 22px 26px 44px;
+  color: var(--troth-ink);
+  background: var(--troth-page);
+  font-size: var(--troth-body);
+  line-height: 1.55;
+}
+
+/* Topbar metrics follow the Franchisee 66px shell rhythm. */
+:is(.app-shell:not(.role-franchisee) .topbar, .rm-topbar, .ops-topbar, .ta-topbar) {
+  height: 66px;
+  gap: 18px;
+  padding: 0 26px;
+  border-color: var(--troth-line);
+  background: #fffffff2;
+}
+
+:is(.app-shell:not(.role-franchisee) .topbar-search, .rm-global-search, .ops-global-search, .ta-search) {
+  height: 39px;
+  border: 1px solid #dfe4ee;
+  border-radius: 9px;
+  background: #f8f9fc;
+}
+
+:is(.app-shell:not(.role-franchisee) .icon-button, .rm-icon-btn, .ops-icon, .ta-icon) {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--troth-line);
+  border-radius: 10px;
+  background: #fff;
+  color: #24304c;
+}
+
+:is(.app-shell:not(.role-franchisee) .icon-button, .rm-icon-btn, .ops-icon, .ta-icon) svg {
+  width: var(--troth-icon);
+  height: var(--troth-icon);
+  stroke-width: 2;
+}
+
+/* Page headers */
+:is(.app-shell:not(.role-franchisee) .page-header, .app-shell:not(.role-franchisee) .tf-page-head,
+    .rm-page-header, .ops-page-head, .ta-page-head) {
+  align-items: flex-end;
+  gap: 24px;
+  margin: 3px 0 18px;
+}
+
+:is(.app-shell:not(.role-franchisee) .page-header h1, .app-shell:not(.role-franchisee) .tf-page-head h1,
+    .rm-page-header h1, .ops-page-head h1, .ta-page-head h1) {
+  margin: 3px 0 4px;
+  color: var(--troth-ink);
+  font-size: var(--troth-page-title);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -.025em;
+  font-family: var(--troth-heading-font);
+}
+
+:is(.app-shell:not(.role-franchisee) .eyebrow, .app-shell:not(.role-franchisee) .tf-page-head > div:first-child > span,
+    .rm-page-header > div > small, .ops-page-head > div > small, .ta-page-head > div > small) {
+  color: #3159c9;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: .11em;
+}
+
+:is(.app-shell:not(.role-franchisee) .page-header p, .app-shell:not(.role-franchisee) .tf-page-head p,
+    .rm-page-header p, .ops-page-head p, .ta-page-head p) {
+  max-width: 760px;
+  margin: 0;
+  color: var(--troth-muted);
+  font-size: var(--troth-body);
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+/* Shared surfaces, section headings and KPI cards */
+:is(.app-shell:not(.role-franchisee) .panel, .app-shell:not(.role-franchisee) .tf-panel,
+    .rm-panel, .ops-panel, .ta-panel) {
+  border: 1px solid var(--troth-line);
+  border-radius: var(--troth-card-radius);
+  background: var(--troth-surface);
+  box-shadow: 0 4px 18px #16275608;
+}
+
+:is(.app-shell:not(.role-franchisee) .panel-head, .app-shell:not(.role-franchisee) .tf-panel > header,
+    .rm-panel-head, .ops-panel > header, .ta-panel > header) {
+  min-height: 0;
+  padding: 14px 16px;
+  border-color: #edf0f5;
+}
+
+:is(.app-shell:not(.role-franchisee) .panel-head b, .app-shell:not(.role-franchisee) .tf-panel > header h2,
+    .rm-panel-head b, .ops-panel > header b, .ta-panel > header b,
+    .app-shell:not(.role-franchisee) .page h2, .rm-section-title b) {
+  color: var(--troth-ink);
+  font-size: var(--troth-section-title);
+  font-weight: 700;
+  line-height: 1.35;
+  font-family: var(--troth-heading-font);
+}
+
+:is(.app-shell:not(.role-franchisee) .panel-head small, .app-shell:not(.role-franchisee) .tf-panel > header p,
+    .rm-panel-head small, .ops-panel > header small, .ta-panel > header small) {
+  margin-top: 3px;
+  color: var(--troth-muted);
+  font-size: var(--troth-helper);
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+:is(.app-shell:not(.role-franchisee) .stat-card, .app-shell:not(.role-franchisee) .tf-metric,
+    .rm-stats > button, .rm-stats > div,
+    .ops-kpis article, .ta-kpis article) {
+  min-height: 112px;
+  padding: 15px;
+  border: 1px solid var(--troth-line);
+  border-radius: var(--troth-card-radius);
+  background: var(--troth-surface);
+  box-shadow: 0 4px 18px #16275608;
+}
+
+:is(.app-shell:not(.role-franchisee) .stat-card > span:not(.stat-card-icon), .app-shell:not(.role-franchisee) .tf-metric > span,
+    .rm-stats span,
+    .ops-kpis span, .ta-kpis span) {
+  color: #5f687e;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+:is(.app-shell:not(.role-franchisee) .stat-card strong, .app-shell:not(.role-franchisee) .tf-metric > strong,
+    .rm-stats strong,
+    .ops-kpis strong, .ta-kpis strong) {
+  margin: 7px 0 5px;
+  color: var(--troth-ink);
+  font-size: var(--troth-card-value);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+:is(.app-shell:not(.role-franchisee) .stat-card small, .app-shell:not(.role-franchisee) .tf-metric > small,
+    .rm-stats small,
+    .ops-kpis small, .ta-kpis small) {
+  color: var(--troth-muted);
+  font-size: var(--troth-helper);
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+/* Buttons */
+:is(.app-shell:not(.role-franchisee) .primary-btn, .app-shell:not(.role-franchisee) .tf-primary,
+    .rm-primary, .ops-primary, .ta-primary) {
+  display: inline-flex;
+  min-height: var(--troth-button-height);
+  height: auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 1px solid #214acb;
+  border-radius: var(--troth-radius);
+  background: linear-gradient(180deg, #3564ef, #2852d7);
+  color: #fff;
+  box-shadow: 0 4px 10px #1d4ed826;
+  font-size: var(--troth-control);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+:is(.app-shell:not(.role-franchisee) .secondary-btn, .app-shell:not(.role-franchisee) .tf-secondary) {
+  min-height: var(--troth-button-height);
+  height: auto;
+  padding: 8px 13px;
+  border: 1px solid #d9dfeb;
+  border-radius: var(--troth-radius);
+  background: #fff;
+  color: #253452;
+  box-shadow: none;
+  font-size: var(--troth-control);
+  font-weight: 700;
+}
+
+:is(.app-shell:not(.role-franchisee) .tf-text-btn,
+    .app-shell:not(.role-franchisee) .row-action,
+    .app-shell:not(.role-franchisee) .admin-text-btn,
+    .app-shell:not(.role-franchisee) .admin-open-360,
+    .rm-link, .rm-icon-action, .ops-link) {
+  color: #2854d8;
+  font-size: var(--troth-control);
+  font-weight: 700;
+}
+
+:is(.app-shell:not(.role-franchisee) .primary-btn, .app-shell:not(.role-franchisee) .secondary-btn,
+    .app-shell:not(.role-franchisee) .tf-primary, .app-shell:not(.role-franchisee) .tf-secondary,
+    .rm-primary, .ops-primary, .ta-primary) svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2;
+}
+
+/* Search, filter and form controls */
+:is(.app-shell:not(.role-franchisee) .search-box, .rm-filterbar label, .ops-global-search,
+    .ta-search) {
+  min-height: 36px;
+  border: 1px solid #dfe3ec;
+  border-radius: var(--troth-radius);
+  background: #fff;
+}
+
+:is(.app-shell:not(.role-franchisee) .select-wrap select, .rm-filterbar select,
+    .ops-filters select, .ta-local-filters select) {
+  min-height: 36px;
+  border: 1px solid #dfe3ec;
+  border-radius: var(--troth-radius);
+  background: #fff;
+  color: #24304a;
+  font-size: var(--troth-control);
+}
+
+:is(.app-shell:not(.role-franchisee) .form-drawer, .app-shell:not(.role-franchisee) .modal,
+    .app-shell:not(.role-franchisee) .admin-onboarding-page,
+    .rm-inline-form, .rm-modal-form, .rm-profile-edit form,
+    .ops-modal, .ops-profile form, .ops-issuance,
+    .ta-form, .ta-entity-form) label {
+  color: #39445e;
+  font-size: var(--troth-label);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+:is(.app-shell:not(.role-franchisee) .form-drawer, .app-shell:not(.role-franchisee) .modal,
+    .app-shell:not(.role-franchisee) .admin-onboarding-page,
+    .rm-inline-form, .rm-modal-form, .rm-profile-edit form,
+    .ops-modal, .ops-profile form, .ops-issuance,
+    .ta-form, .ta-entity-form)
+  :is(input, select, textarea) {
+  min-height: var(--troth-control-height);
+  height: auto;
+  padding: 9px 10px;
+  border: 1px solid #dbe0e9;
+  border-radius: var(--troth-radius);
+  background: #fff;
+  color: #1b2948;
+  font-size: var(--troth-input);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+:is(.app-shell:not(.role-franchisee), .rm-shell, .ops-shell, .ta-shell) :is(input, select, textarea):focus {
+  border-color: #5076e8;
+  outline: 0;
+  box-shadow: 0 0 0 3px #2b57dc12;
+}
+
+:is(.app-shell:not(.role-franchisee), .rm-shell, .ops-shell, .ta-shell) :is(input, textarea)::placeholder {
+  color: #8a91a1;
+  opacity: 1;
+}
+
+:is(.app-shell:not(.role-franchisee), .rm-shell, .ops-shell, .ta-shell) :is(input, select, textarea):disabled {
+  color: var(--troth-muted);
+  background: var(--troth-soft);
+  opacity: 1;
+}
+
+/* Admin Add Customer is the full-page counterpart of the Franchisee customer
+   onboarding wizard, so it retains that wizard's compact field treatment. */
+.app-shell:not(.role-franchisee) .admin-customer-form-page
+  :is(.admin-fixed-form-section, .admin-active-form-section) label {
+  color: #28344c;
+  font-family: var(--troth-font);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.app-shell:not(.role-franchisee) .admin-customer-form-page
+  :is(.admin-fixed-form-section, .admin-active-form-section) :is(input, select, textarea) {
+  font-family: var(--troth-font);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+/* Data tables */
+:is(.app-shell:not(.role-franchisee) .data-table,
+    .app-shell:not(.role-franchisee) .onboarding-table,
+    .app-shell:not(.role-franchisee) .access-user-table,
+    .app-shell:not(.role-franchisee) .product-admin-table,
+    .app-shell:not(.role-franchisee) .mis-table,
+    .app-shell:not(.role-franchisee) .administration-table,
+    .app-shell:not(.role-franchisee) .cp-table-wrap table,
+    .app-shell:not(.role-franchisee) .tf-table,
+    .rm-table-wrap table, .rm-app-table table, .ops-table table, .ta-table table) {
+  border-collapse: collapse;
+  color: var(--troth-ink);
+}
+
+:is(.app-shell:not(.role-franchisee) .data-table,
+    .app-shell:not(.role-franchisee) .onboarding-table,
+    .app-shell:not(.role-franchisee) .access-user-table,
+    .app-shell:not(.role-franchisee) .product-admin-table,
+    .app-shell:not(.role-franchisee) .mis-table,
+    .app-shell:not(.role-franchisee) .administration-table,
+    .app-shell:not(.role-franchisee) .cp-table-wrap table,
+    .app-shell:not(.role-franchisee) .tf-table,
+    .rm-table-wrap table, .rm-app-table table, .ops-table table, .ta-table table) th {
+  padding: 9px 12px;
+  border-color: var(--troth-line);
+  background: #f8f9fc;
+  color: #6e7689;
+  font-size: var(--troth-table-head);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:is(.app-shell:not(.role-franchisee) .data-table,
+    .app-shell:not(.role-franchisee) .onboarding-table,
+    .app-shell:not(.role-franchisee) .access-user-table,
+    .app-shell:not(.role-franchisee) .product-admin-table,
+    .app-shell:not(.role-franchisee) .mis-table,
+    .app-shell:not(.role-franchisee) .administration-table,
+    .app-shell:not(.role-franchisee) .cp-table-wrap table,
+    .app-shell:not(.role-franchisee) .tf-table,
+    .rm-table-wrap table, .rm-app-table table, .ops-table table, .ta-table table) td {
+  height: auto;
+  padding: 11px 12px;
+  border-color: #edf0f5;
+  color: var(--troth-ink);
+  font-size: var(--troth-table-body);
+  font-weight: 400;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+:is(.app-shell:not(.role-franchisee) .data-table,
+    .app-shell:not(.role-franchisee) .onboarding-table,
+    .app-shell:not(.role-franchisee) .access-user-table,
+    .app-shell:not(.role-franchisee) .product-admin-table,
+    .app-shell:not(.role-franchisee) .mis-table,
+    .app-shell:not(.role-franchisee) .administration-table,
+    .app-shell:not(.role-franchisee) .cp-table-wrap table,
+    .app-shell:not(.role-franchisee) .tf-table,
+    .rm-table-wrap table, .rm-app-table table, .ops-table table, .ta-table table) td b {
+  color: #1c2b4d;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+:is(.app-shell:not(.role-franchisee) .data-table,
+    .app-shell:not(.role-franchisee) .onboarding-table,
+    .app-shell:not(.role-franchisee) .access-user-table,
+    .app-shell:not(.role-franchisee) .product-admin-table,
+    .app-shell:not(.role-franchisee) .mis-table,
+    .app-shell:not(.role-franchisee) .administration-table,
+    .app-shell:not(.role-franchisee) .cp-table-wrap table,
+    .app-shell:not(.role-franchisee) .tf-table,
+    .rm-table-wrap table, .rm-app-table table, .ops-table table, .ta-table table) td small {
+  margin-top: 3px;
+  color: #7a8294;
+  font-size: var(--troth-helper);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Status badges */
+:is(.app-shell:not(.role-franchisee) .status,
+    .app-shell:not(.role-franchisee) .access-status,
+    .app-shell:not(.role-franchisee) .admin-product-status,
+    .app-shell:not(.role-franchisee) .config-status,
+    .app-shell:not(.role-franchisee) .tf-badge,
+    .rm-sla, .rm-chip, .ops-status, .ta-status) {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: var(--troth-badge);
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+:is(.status-active, .status-completed, .status-approved, .status-verified,
+    .access-status-active, .rm-sla.on-track, .rm-chip.green, .ops-status.green,
+    .ops-status.on-track, .ta-status.green, .ta-status.good) {
+  color: #0d7b61;
+  background: #e7f7f1;
+}
+
+:is(.status-pending, .status-action-required, .status-due-soon,
+    .rm-sla.attention, .rm-chip.amber, .ops-status.amber, .ops-status.attention,
+    .ta-status.amber, .ta-status.warn) {
+  color: #b66400;
+  background: #fff2dc;
+}
+
+:is(.status-delayed, .status-rejected, .status-escalated, .status-overdue,
+    .rm-sla.overdue, .rm-chip.red, .ops-status.red, .ops-status.overdue,
+    .ta-status.red, .ta-status.bad) {
+  color: var(--troth-red);
+  background: #ffe8eb;
+}
+
+/* Tabs and selectors retain each role's content while sharing one active state. */
+:is(.app-shell:not(.role-franchisee) .product-tabs,
+    .app-shell:not(.role-franchisee) .product-admin-tabs,
+    .app-shell:not(.role-franchisee) .report-primary-tabs,
+    .app-shell:not(.role-franchisee) .admin-section-tabs,
+    .app-shell:not(.role-franchisee) .cp-tabs,
+    .app-shell:not(.role-franchisee) .onboarding-tabs,
+    .app-shell:not(.role-franchisee) .tf-tabs,
+    .rm-tabs, .rm-report-types, .rm-case-tabs, .rm-renewal-tabs,
+    .ops-tabs, .ta-tabs, .ta-product-tabs) button {
+  min-height: 36px;
+  padding: 8px 12px;
+  color: #687188;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+:is(.app-shell:not(.role-franchisee) .product-tabs,
+    .app-shell:not(.role-franchisee) .product-admin-tabs,
+    .app-shell:not(.role-franchisee) .report-primary-tabs,
+    .app-shell:not(.role-franchisee) .admin-section-tabs,
+    .app-shell:not(.role-franchisee) .cp-tabs,
+    .app-shell:not(.role-franchisee) .onboarding-tabs,
+    .app-shell:not(.role-franchisee) .tf-tabs,
+    .rm-tabs, .rm-report-types, .rm-case-tabs, .rm-renewal-tabs,
+    .ops-tabs, .ta-tabs, .ta-product-tabs) button.active {
+  border-color: #2b57dc;
+  background: #edf2ff;
+  color: #2450d0;
+}
+
+/* Lucide sizing and shell navigation */
+:is(.app-shell:not(.role-franchisee) .sidebar, .rm-sidebar, .ops-sidebar, .ta-sidebar) nav button svg {
+  width: 19px;
+  height: 19px;
+  flex: none;
+  stroke-width: 2;
+}
+
+:is(.app-shell:not(.role-franchisee) .sidebar, .rm-sidebar, .ops-sidebar, .ta-sidebar) nav button {
+  min-height: 42px;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+:is(.app-shell:not(.role-franchisee) .topbar-search, .rm-global-search, .ops-global-search, .ta-search) input {
+  font-family: var(--troth-font);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+:is(.app-shell:not(.role-franchisee), .rm-shell, .ops-shell, .ta-shell) .role-switcher :is(span, small) {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+:is(.app-shell:not(.role-franchisee), .rm-shell, .ops-shell, .ta-shell) .role-switcher select {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+:is(.app-shell:not(.role-franchisee) .sidebar, .rm-sidebar, .ops-sidebar, .ta-sidebar) nav button.active {
+  background: linear-gradient(90deg, #2855e7, #3b68f5);
+  color: #fff;
+  box-shadow: 0 6px 18px #00164480;
+}
+
+:is(.app-shell:not(.role-franchisee), .rm-shell, .ops-shell, .ta-shell)
+  :is(.row-action, .rm-link, .rm-icon-action, .ops-link, .ta-icon) svg {
+  width: var(--troth-icon-small);
+  height: var(--troth-icon-small);
+  stroke-width: 2;
+}
+
+/* Content remains sharp; opacity is reserved for actual disabled controls. */
+:is(.app-shell:not(.role-franchisee), .rm-shell, .ops-shell, .ta-shell)
+  :is(main, section, article, table, form):not([aria-disabled="true"]) {
+  filter: none;
+}
+
+@media (max-width: 700px) {
+  :is(.app-shell:not(.role-franchisee) .main-area > main, .rm-page-wrap, .ops-page, .ta-page) {
+    padding: 16px 13px 35px;
+  }
+
+  :is(.app-shell:not(.role-franchisee) .page-header, .app-shell:not(.role-franchisee) .tf-page-head,
+      .rm-page-header, .ops-page-head, .ta-page-head) {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  :is(.app-shell:not(.role-franchisee) .page-header h1, .app-shell:not(.role-franchisee) .tf-page-head h1,
+      .rm-page-header h1, .ops-page-head h1, .ta-page-head h1) {
+    font-size: 25px;
+  }
+}

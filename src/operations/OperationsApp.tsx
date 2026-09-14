@@ -1,5 +1,5 @@
 import { useMemo,useState,type FormEvent,type ReactNode } from 'react'
-import { AlertTriangle,ArrowLeft,BarChart3,Bell,CheckCircle2,ChevronDown,Download,FileCheck2,FileText,LayoutDashboard,LogOut,Menu,MessageSquareWarning,Search,Send,ShieldCheck,UserRound,WalletCards,X } from 'lucide-react'
+import { AlertTriangle,ArrowLeft,BarChart3,Bell,ChartNoAxesCombined,CheckCircle2,ChevronDown,Download,FileCheck2,FileText,LayoutDashboard,LogOut,Menu,MessageSquareWarning,Search,Send,ShieldCheck,UserRound,WalletCards,X } from 'lucide-react'
 import type { Role } from '../types'
 import { formatINR } from '../data/mockData'
 import { operationsRepository } from './service'
@@ -8,7 +8,7 @@ import type { CounterOffer,OpsCase,OpsModule,OpsQuery,OpsStage,OpsStore,SLAStatu
 import './operations.css'
 
 interface Props{initialPage?:string;onRoleChange:(role:Role)=>void;onLogout:()=>void;onToast:(message:string)=>void}
-const nav:{id:OpsModule;label:string;icon:typeof LayoutDashboard}[]=[{id:'dashboard',label:'Dashboard',icon:LayoutDashboard},{id:'applications',label:'Applications Received',icon:FileText},{id:'queries',label:'Queries to Franchise',icon:MessageSquareWarning},{id:'payment',label:'Payment & Issuance',icon:WalletCards},{id:'reports',label:'Reports',icon:BarChart3}]
+const nav:{id:OpsModule;label:string;icon:typeof LayoutDashboard}[]=[{id:'dashboard',label:'Dashboard',icon:LayoutDashboard},{id:'applications',label:'Applications Received',icon:FileText},{id:'queries',label:'Queries to Franchise',icon:MessageSquareWarning},{id:'payment',label:'Payment & Issuance',icon:WalletCards},{id:'reports',label:'Reports',icon:ChartNoAxesCombined}]
 const stages:OpsStage[]=['Received','Under Review','Query Raised','Query Resolved','Terms Finalized','Awaiting Payment','Payment Confirmed','Issuance Pending','Completed','Not Proceeded']
 interface ApplicationFilters{bucket:string;product:string;status:string;desk:string;sla:string;page:number}
 const initialApplicationFilters:ApplicationFilters={bucket:'All active',product:'all',status:'all',desk:'all',sla:'all',page:1}
