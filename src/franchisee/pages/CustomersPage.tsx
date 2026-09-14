@@ -18,6 +18,7 @@ import {
   money,
   PageHeader,
   Panel,
+  StatusBadge,
 } from '../components/FranchiseeUI'
 
 
@@ -103,7 +104,37 @@ export function CustomersPage({
 
   const [search, setSearch] = useState('')
   const [kyc, setKyc] = useState('All KYC')
+  const [product, setProduct] = useState('All Products')
+  const [source, setSource] = useState('All Sources')
   const [adding, setAdding] = useState(false)
+
+  const kycOptions = useMemo(
+    () => [
+      'All KYC',
+      ...new Set(customers.map(customerKycStatus)),
+    ],
+    [customers]
+  )
+
+  const productOptions = useMemo(
+    () => [
+      'All Products',
+      ...new Set(customers.flatMap(customerProducts)),
+    ],
+    [customers]
+  )
+
+  const sourceOptions = useMemo(
+    () => [
+      'All Sources',
+      ...new Set(
+        customers
+          .map(customerSource)
+          .filter((value): value is string => Boolean(value))
+      ),
+    ],
+    [customers]
+  )
 
 
   // ----------------------------------------------------------
@@ -115,7 +146,7 @@ export function CustomersPage({
   // - Mobile number
   // - Email
   //
-  // They can also be filtered by KYC status.
+  // They can also be filtered by KYC, product and source.
   // ----------------------------------------------------------
 
   const rows = useMemo(() => {
@@ -123,7 +154,16 @@ export function CustomersPage({
 
     return customers.filter((customer) => {
       const matchesKyc =
-        kyc === 'All KYC' || customer.kyc === kyc
+        kyc === 'All KYC' ||
+        customerKycStatus(customer) === kyc
+
+      const matchesProduct =
+        product === 'All Products' ||
+        customerProducts(customer).includes(product)
+
+      const matchesSource =
+        source === 'All Sources' ||
+        customerSource(customer) === source
 
       const searchableText = `
         ${customer.name}
@@ -135,9 +175,14 @@ export function CustomersPage({
       const matchesSearch =
         searchableText.includes(normalizedSearch)
 
-      return matchesKyc && matchesSearch
+      return (
+        matchesKyc &&
+        matchesProduct &&
+        matchesSource &&
+        matchesSearch
+      )
     })
-  }, [customers, search, kyc])
+  }, [customers, search, kyc, product, source])
 
 
   // ----------------------------------------------------------
@@ -206,7 +251,7 @@ export function CustomersPage({
       >
 
         {/* ----------------------------------------------------
-            Search and KYC Filters
+            Customer List Filters
         ---------------------------------------------------- */}
 
         <Filters
@@ -217,12 +262,21 @@ export function CustomersPage({
             label="KYC"
             value={kyc}
             onChange={setKyc}
-            options={[
-              'All KYC',
-              'Verified',
-              'Pending',
-              'Expired',
-            ]}
+            options={kycOptions}
+          />
+
+          <FilterSelect
+            label="Products"
+            value={product}
+            onChange={setProduct}
+            options={productOptions}
+          />
+
+          <FilterSelect
+            label="Source"
+            value={source}
+            onChange={setSource}
+            options={sourceOptions}
           />
         </Filters>
 
@@ -235,10 +289,11 @@ export function CustomersPage({
           headers={[
             'Customer Name',
             'Contact',
-            'Direct / Sub-Franchisee',
+            'Source',
             'Insurance Premium',
             'Investments',
             'Loans',
+            'KYC',
             'Open 360',
           ]}
           empty={!rows.length}
@@ -251,6 +306,10 @@ export function CustomersPage({
             // =================================================
 
             const profile = customer.profile360
+            const sourceValue = customerSource(customer)
+            const sourceDetail =
+              profile?.preferences.referredBy?.trim()
+            const kycStatus = customerKycStatus(customer)
 
             // Legacy holdings are used as a fallback where
             // Customer 360 data is not yet available.
@@ -414,14 +473,22 @@ export function CustomersPage({
 
 
                 {/* ---------------------------------------------
-                    Customer Relationship
+                    Customer Source
                 --------------------------------------------- */}
 
                 <td>
-                  <b>Direct</b>
-                  <small>
-                    Franchisee customer
-                  </small>
+                  {sourceValue ? (
+                    <>
+                      <b>{sourceValue}</b>
+                      {sourceDetail && (
+                        <small>{sourceDetail}</small>
+                      )}
+                    </>
+                  ) : (
+                    <span className="tf-customer-none">
+                      —
+                    </span>
+                  )}
                 </td>
 
 
@@ -514,6 +581,17 @@ export function CustomersPage({
 
 
                 {/* ---------------------------------------------
+                    KYC Status
+                --------------------------------------------- */}
+
+                <td>
+                  <StatusBadge tone={kycTone(kycStatus)}>
+                    {kycStatus}
+                  </StatusBadge>
+                </td>
+
+
+                {/* ---------------------------------------------
                     Open Customer 360
                 --------------------------------------------- */}
 
@@ -569,4 +647,30 @@ export function CustomersPage({
 
     </div>
   )
+}
+
+
+function customerSource(customer: FranchiseeCustomer) {
+  return customer.profile360?.preferences.source?.trim() || undefined
+}
+
+
+function customerKycStatus(customer: FranchiseeCustomer) {
+  const status = customer.profile360?.kyc.status || customer.kyc
+
+  return status === 'Verified' ? 'Complete' : status
+}
+
+
+function customerProducts(customer: FranchiseeCustomer) {
+  return [...new Set(customer.products.filter(Boolean))]
+}
+
+
+function kycTone(status: string) {
+  if (status === 'Complete') return 'green' as const
+  if (status === 'Expired') return 'red' as const
+  if (/pending|partial/i.test(status)) return 'amber' as const
+
+  return 'gray' as const
 }

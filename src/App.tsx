@@ -31,7 +31,7 @@ import { authSession } from './auth/authSession'
 const DEFAULT_AUTHENTICATED_PATH = '/admin/dashboard'
 
 const franchiseePages = new Set(['dashboard','customers','employees','sub-franchisees','agents','crm','applications','renewals','products','support','profile','notifications','marketing','training','business-revenue','commission-payout'])
-const isFranchiseePage=(page:string)=>franchiseePages.has(page)||/^customers\/[^/]+\/360$/.test(page)||/^sub-franchisees\/[^/]+$/.test(page)
+const isFranchiseePage=(page:string)=>franchiseePages.has(page)||page==='employees/new'||/^customers\/[^/]+\/360$/.test(page)||/^sub-franchisees\/[^/]+$/.test(page)
 const readInitialWorkspace = ():{role:Role;page:string} => {
   let path=window.location.pathname
   if(path.startsWith('/test-admin')){

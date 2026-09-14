@@ -1,5 +1,5 @@
 import { buildFranchiseeRenewals, type FranchiseeRenewal } from '../renewalsData'
-import type { CustomerDocument } from '../customer360Types'
+import type { CustomerDocument, FileMetadata } from '../customer360Types'
 import type { FranchiseeCase, FranchiseeCustomer, FranchiseeProduct, FranchiseeStore, TimelineEvent } from '../types'
 import { legacyCustomerHoldings } from '../customer360HoldingData'
 
@@ -16,6 +16,7 @@ export interface CustomerHolding {
   startDate?:string
   maturityOrRenewalDate?:string
   returnPercent?:number
+  document?:FileMetadata
 }
 
 export interface PortfolioSummary {
@@ -57,20 +58,32 @@ const normal=(value:string)=>value.toLowerCase().replace(/[^a-z0-9]/g,'')
 const aliases:Record<string,string>={mutualfund:'Mutual Fund',equitymutualfund:'Mutual Fund',sharesdemat:'Demat',demataccount:'Demat',portfoliomanagementservices:'PMS',alternativeinvestmentfund:'AIF',bondsfixedincome:'Bonds & FD',corporatefd:'Corporate FD',researchsubscription:'Research Advisory'}
 const matches=(masterName:string,recordName:string)=>{const master=normal(masterName),record=normal(recordName),alias=normal(aliases[master]||'');return master===record||Boolean(alias&&alias===record)||master.includes(record)||record.includes(master)}
 
-function holdingsFor(customer:FranchiseeCustomer,products:FranchiseeProduct[]):CustomerHolding[]{
+function holdingsFor(customer:FranchiseeCustomer,products:FranchiseeProduct[],cases:FranchiseeCase[]):CustomerHolding[]{
   const profile=customer.profile360
   const legacy=legacyCustomerHoldings[customer.id]||[]
   const detailed:CustomerHolding[]=[
-    ...(profile?.policies||[]).map(item=>({id:item.id,productId:'',product:item.planName||item.category,category:'Insurance' as const,provider:item.insurer,reference:item.policyNumber,investedOrCover:item.sumInsured,currentValue:undefined,status:item.status,startDate:item.startDate,maturityOrRenewalDate:item.renewalDate})),
-    ...(profile?.loans||[]).map(item=>({id:item.id,productId:'',product:item.loanType,category:'Loans' as const,provider:item.lender,reference:item.accountNumber,investedOrCover:item.originalAmount,currentValue:item.outstandingAmount,status:item.status,startDate:item.startDate,maturityOrRenewalDate:item.maturityDate})),
+    ...(profile?.policies||[]).map(item=>({id:item.id,productId:'',product:item.planName||item.category,category:'Insurance' as const,provider:item.insurer,reference:item.policyNumber,investedOrCover:item.sumInsured,currentValue:undefined,status:item.status,startDate:item.startDate,maturityOrRenewalDate:item.renewalDate,document:item.document})),
+    ...(profile?.loans||[]).map(item=>({id:item.id,productId:'',product:item.loanType,category:'Loans' as const,provider:item.lender,reference:item.accountNumber,investedOrCover:item.originalAmount,currentValue:item.outstandingAmount,status:item.status,startDate:item.startDate,maturityOrRenewalDate:item.maturityDate,document:item.documents.find(document=>/sanction/i.test(document.documentType))?.file||item.documents.find(document=>document.file)?.file})),
     ...(profile?.investments||[]).map(item=>({id:item.id,productId:'',product:item.investmentType||item.productName||'Investment',category:'Investment & Wealth' as const,provider:item.provider,reference:item.referenceNumber,investedOrCover:item.investmentAmount,currentValue:item.currentValue,status:item.status||'Recorded',startDate:item.startDate,maturityOrRenewalDate:item.maturityDate,returnPercent:item.investmentAmount&&item.currentValue!==undefined?((item.currentValue-item.investmentAmount)/item.investmentAmount)*100:undefined}))
   ]
-  const rows:CustomerHolding[]=[]
-  for(const product of products){
-    const records=detailed.filter(item=>matches(product.name,item.product))
-    if(records.length) rows.push(...records.map(item=>({...item,productId:product.id,product:product.name,category:product.category})))
-    else if(legacy.some(item=>item.productId===product.id)) rows.push(...legacy.filter(item=>item.productId===product.id).map(item=>({...item,product:product.name,category:product.category})))
-    else if(customer.products.some(name=>matches(product.name,name))) rows.push({id:`legacy-${customer.id}-${product.id}`,productId:product.id,product:product.name,category:product.category,status:'Active'})
+  const masterFor=(name:string)=>products.find(product=>matches(product.name,name))
+  const categoryFor=(name:string):FranchiseeProduct['category']=>masterFor(name)?.category||(/loan/i.test(name)&&!/protector/i.test(name)?'Loans':/insurance|policy|protector/i.test(name)?'Insurance':'Investment & Wealth')
+  const rows:CustomerHolding[]=detailed.map(item=>{const master=masterFor(item.product);return master?{...item,productId:master.id,product:master.name,category:master.category}:item})
+  for(const item of legacy){
+    if(rows.some(row=>row.id===item.id))continue
+    const master=products.find(product=>product.id===item.productId)
+    rows.push({...item,product:master?.name||item.productId,category:master?.category||categoryFor(master?.name||item.productId)})
+  }
+  for(const name of customer.products){
+    const master=masterFor(name)
+    const productId=master?.id||normal(name)
+    if(rows.some(row=>(row.productId&&row.productId===productId)||matches(row.product,name)))continue
+    rows.push({id:`linked-${customer.id}-${productId}`,productId,product:master?.name||name,category:master?.category||categoryFor(name),status:'Active'})
+  }
+  for(const item of cases.filter(item=>item.customerId===customer.id&&['Approved / Issued','Completed'].includes(item.status))){
+    const master=masterFor(item.product),productId=master?.id||normal(item.product)
+    if(rows.some(row=>(row.productId&&row.productId===productId)||matches(row.product,item.product)))continue
+    rows.push({id:`case-${item.id}`,productId,product:master?.name||item.product,category:master?.category||categoryFor(item.product),investedOrCover:item.amount,status:'Active'})
   }
   return rows
 }
@@ -126,7 +139,7 @@ export const customer360Service={
     const customer=store.customers.find(item=>item.id===customerId)
     if(!customer)return null
     const productMaster=store.products
-    const holdings=holdingsFor(customer,productMaster)
+    const holdings=holdingsFor(customer,productMaster,store.cases)
     const renewals=buildFranchiseeRenewals([customer],store.cases)
     return {customer,productMaster,holdings,portfolio:portfolioFor(customer,holdings),documents:documentsFor(customer),communications:customer.timeline,openCases:store.cases.filter(item=>item.customerId===customer.id&&!['Completed','Rejected','Approved / Issued'].includes(item.status)),opportunities:opportunitiesFor(customer,productMaster,holdings),intelligenceConnected:false,opportunitySource:'Rule-based product gap',renewals}
   }

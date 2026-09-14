@@ -8,7 +8,7 @@ import { subFranchiseeRelationshipService } from '../services/subFranchiseeRelat
 import { authenticatedFranchisee, subFranchiseeService } from '../services/subFranchiseeService'
 import type { SubFranchisee, SubFranchiseeDraft } from '../subFranchiseeTypes'
 import { AgentForm, SimpleAgentDetail, type SimpleAgentTab } from './AgentsPage'
-import { EmployeeForm, SimpleEmployeeDetail, type SimpleEmployeeTab } from './EmployeesPage'
+import { EmployeeCreatePage, SimpleEmployeeDetail, type SimpleEmployeeTab } from './EmployeesPage'
 
 type SubTab='Overview'|'Employees'|'Agents'|'Customers'|'Business Lines'|'Documents'
 
@@ -39,6 +39,7 @@ function SubFranchiseeDetail({item,products,customers,cases,onBack,onEdit,onOpen
   const customerIds=mappedCustomerIds(relatedEmployees,relatedAgents),relatedCustomers=customers.filter(customer=>customerIds.has(customer.id))
   const tabs:SubTab[]=['Overview','Employees','Agents','Customers','Business Lines','Documents']
   const saveEmployee=(draft:EmployeeDraft)=>{const employee=franchiseeEmployeeRepository.saveNew({...draft,franchiseeId:currentFranchiseeId,subFranchiseeId:item.id});setEmployees(current=>[employee,...current]);setEmployeeForm(false);onToast(`${fullName(employee)} added to ${item.firmName}`)}
+  if(employeeForm)return <div className="franchisee-employees"><EmployeeCreatePage employees={relatedEmployees} customers={relatedCustomers} products={item.products} subFranchiseeId={item.id} contextLabel={item.firmName} onClose={()=>setEmployeeForm(false)} onSave={saveEmployee}/></div>
   return <div className="franchisee-sub-franchisees sf-detail-page"><Modal title={item.firmName} subtitle={`${item.code} · Sub-Franchisee Detail`} onClose={onBack}>
     <section className="sf-detail-hero"><div className="sf-avatar">{initials(item.firmName)}</div><div><span>{item.code}</span><h1>{item.firmName}</h1><p>{item.contactPerson} · {item.mobile} · {item.city}, {item.state}</p></div><div className="sf-hero-status"><StatusBadge>{item.status}</StatusBadge><small>Parent: {authenticatedFranchisee.name}</small></div><button className="tf-secondary" onClick={onEdit}><Edit3/> Edit</button></section>
     <div className="tf-tabs sf-tabs">{tabs.map(value=><button key={value} className={tab===value?'active':''} onClick={()=>setTab(value)}>{value}</button>)}</div>
@@ -50,7 +51,6 @@ function SubFranchiseeDetail({item,products,customers,cases,onBack,onEdit,onOpen
       {tab==='Business Lines'&&<Panel title="Business Lines" subtitle="Business areas available to this Sub-Franchisee"><div className="agent-line-chips">{item.products.map(product=><span key={product}>{product}</span>)}</div>{!item.products.length&&<Empty text="No business lines are assigned."/>}</Panel>}
       {tab==='Documents'&&<Panel title="Documents" subtitle="Sub-Franchisee document records"><DataTable headers={['Document','File','Uploaded','Status']} empty={!item.documents.length}>{item.documents.map(document=><tr key={document.id}><td><b>{document.type}</b></td><td>{document.fileName}</td><td>{date(document.uploadedAt)}</td><td><StatusBadge>{document.status}</StatusBadge></td></tr>)}</DataTable>{!item.documents.length&&<Empty text="No documents are available."/>}</Panel>}
     </div>
-    {employeeForm&&<div className="franchisee-employees"><EmployeeForm employee={null} employees={relatedEmployees} customers={relatedCustomers} products={item.products} subFranchiseeId={item.id} onClose={()=>setEmployeeForm(false)} onSave={saveEmployee}/></div>}
     {agentForm&&<div className="franchisee-agents"><AgentForm lines={lines.filter(line=>item.products.some(product=>line.name===product||line.productIds.some(id=>products.find(master=>master.id===id)?.name===product)))} products={products} customers={relatedCustomers} subFranchiseeId={item.id} onClose={()=>setAgentForm(false)} onSave={agent=>{setAgents(current=>[agent,...current]);setAgentForm(false);onToast(`${agent.name} added to ${item.firmName}`)}}/></div>}
     {selectedEmployee&&<div className="franchisee-employees"><SimpleEmployeeDetail employee={selectedEmployee} employees={relatedEmployees} customers={customers} cases={cases} tab={employeeTab} setTab={setEmployeeTab} onClose={()=>setSelectedEmployee(undefined)} onOpenCustomer={onOpenCustomer} onToast={onToast}/></div>}
     {selectedAgent&&<div className="franchisee-agents"><SimpleAgentDetail agent={selectedAgent} customers={customers} cases={cases} tab={agentTab} setTab={setAgentTab} onClose={()=>setSelectedAgent(undefined)} onOpenCustomer={onOpenCustomer}/></div>}
