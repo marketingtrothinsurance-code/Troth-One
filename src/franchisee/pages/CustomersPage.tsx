@@ -5,10 +5,8 @@
 import { Plus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
-import { CustomerOnboardingWizard } from '../components/CustomerOnboardingWizard'
 import { legacyCustomerHoldings } from '../customer360HoldingData'
 
-import type { CustomerOnboardingDraft } from '../customer360Types'
 import type { FranchiseeCustomer } from '../types'
 
 import {
@@ -65,13 +63,8 @@ interface Props {
   // Opens the complete Customer 360 view.
   onOpen360: (customerId: string) => void
 
-  // Creates a new customer.
-  onAdd: (input: CustomerOnboardingDraft) => void
-
-  // Saves incomplete onboarding information locally.
-  onSaveDraft: (input: CustomerOnboardingDraft) => void
-
-  draft?: CustomerOnboardingDraft
+  // Opens customer onboarding as a full page.
+  onAddCustomer: () => void
 
   // Currently not used on this page,
   // but kept because it is part of the page interface.
@@ -91,9 +84,7 @@ export function CustomersPage({
   focusCustomerId,
   onFocusHandled,
   onOpen360,
-  onAdd,
-  onSaveDraft,
-  draft,
+  onAddCustomer,
   onApply: _,
   onSupport: __,
   onToast,
@@ -106,7 +97,6 @@ export function CustomersPage({
   const [kyc, setKyc] = useState('All KYC')
   const [product, setProduct] = useState('All Products')
   const [source, setSource] = useState('All Sources')
-  const [adding, setAdding] = useState(false)
 
   const kycOptions = useMemo(
     () => [
@@ -232,7 +222,7 @@ export function CustomersPage({
         actions={
           <button
             className="tf-primary"
-            onClick={() => setAdding(true)}
+            onClick={onAddCustomer}
           >
             <Plus />
             Add New Customer
@@ -611,40 +601,6 @@ export function CustomersPage({
           })}
         </DataTable>
       </Panel>
-
-
-      {/* ======================================================
-          ADD CUSTOMER ONBOARDING WIZARD
-      ====================================================== */}
-
-      {adding && (
-        <CustomerOnboardingWizard
-
-          // Load previously saved draft if available.
-          initial={draft}
-
-          onClose={() => {
-            setAdding(false)
-          }}
-
-          // Save onboarding data without creating
-          // the customer immediately.
-          onSaveDraft={(value) => {
-            onSaveDraft(value)
-
-            onToast(
-              'Customer onboarding draft saved locally'
-            )
-          }}
-
-          // Create customer and close the onboarding modal.
-          onCreate={(value) => {
-            onAdd(value)
-            setAdding(false)
-          }}
-        />
-      )}
-
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import type { Application, ProductType } from '../types'
-import type { ExistingInsurancePolicy } from '../franchisee/customer360Types'
+import type { CustomerOnboardingDraft, ExistingInsurancePolicy } from '../franchisee/customer360Types'
 
 export type AdminCustomerStatus = 'Active' | 'New' | 'Follow-up Required' | 'KYC Pending' | 'Inactive'
 export type AdminKycStatus = 'Complete' | 'Pending' | 'Needs Review' | 'Not Started'
@@ -16,6 +16,7 @@ export interface AdminCustomer {
   preferredContact:string; dob:string; gender:string; occupation:string; annualIncome:string; createdAt:string; lastActivityAt:string
   nextFollowUpAt:string; productInterests:ProductType[]; attentionReasons:string[]; businessValue:number; activeApplications:number
   documents:CustomerDocument[]; followUps:CustomerFollowUp[]; activity:CustomerActivity[]; relationshipNotes:string[]; policies:ExistingInsurancePolicy[]
+  onboardingProfile?:CustomerOnboardingDraft
 }
 
 const firstAdminCustomerId='CUS-000124'

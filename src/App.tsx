@@ -32,7 +32,7 @@ import { authSession } from './auth/authSession'
 const DEFAULT_AUTHENTICATED_PATH = '/admin/dashboard'
 
 const franchiseePages = new Set(['dashboard','customers','employees','sub-franchisees','agents','crm','applications','renewals','products','support','profile','notifications','marketing','training','business-revenue','commission-payout'])
-const isFranchiseePage=(page:string)=>franchiseePages.has(page)||page==='employees/new'||/^customers\/[^/]+\/360$/.test(page)||/^sub-franchisees\/[^/]+$/.test(page)
+const isFranchiseePage=(page:string)=>franchiseePages.has(page)||page==='employees/new'||page==='customers/new'||page==='agents/new'||/^customers\/[^/]+\/360$/.test(page)||/^sub-franchisees\/[^/]+$/.test(page)
 const readInitialWorkspace = ():{role:Role;page:string} => {
   let path=window.location.pathname
   if(path.startsWith('/test-admin')){
@@ -164,7 +164,7 @@ export default function App() {
   else if (page === 'dashboard') content = <Dashboard role={role} apps={visibleApplications} customerGoals={customerGoals} onNavigate={navigate} onToast={setToast} />
   else if (role === 'admin' && page === 'business-details') content = <AdminBusinessDetails apps={visibleApplications} onNavigate={navigate} />
   else if (role === 'admin' && page === 'users') content = <AdminUsersAccess onToast={setToast} />
-  else if (role === 'admin' && (page==='onboarding'||page.startsWith('onboarding/'))) content = <AdminOnboarding route={page} onNavigate={navigate} onToast={setToast} />
+  else if (role === 'admin' && (page==='onboarding'||page.startsWith('onboarding/'))) content = <AdminOnboarding route={page} apps={visibleApplications} onNavigate={navigate} onToast={setToast} />
   else if (role === 'admin' && (page === 'customers'||page === 'customers/new'||/^customers\/[^/]+\/360$/.test(page))) content = <AdminCustomers route={page} apps={visibleApplications} onNavigate={navigate} onToast={setToast} />
   else if (role === 'admin' && page === 'products') content = <AdminProductsPartners apps={visibleApplications} onNavigate={navigate} onToast={setToast} />
   else if (role === 'admin' && page === 'reports') content = <AdminReportsMIS apps={visibleApplications} onNavigate={navigate} onToast={setToast} />
@@ -183,7 +183,7 @@ export default function App() {
   if(role==='operations') return <><OperationsApp initialPage={page} onRoleChange={changeRole} onLogout={handleLogout} onToast={setToast}/>{toast && <div className="toast" role="status"><span>✓</span>{toast}</div>}</>
   if(role==='test-admin') return <><TestAdminApp initialPage={page} applications={applications} onCreateApplication={createApplication} onUpdateApplication={updateApplication} onRoleChange={changeRole} onLogout={handleLogout} onToast={setToast}/>{toast && <div className="toast" role="status"><span>✓</span>{toast}</div>}</>
 
-  const shellPage=role==='admin'&&page.startsWith('customers/')?'customers':page
+  const shellPage=role==='admin'&&page.startsWith('customers/')?'customers':role==='franchisee'&&page==='customers/new'?'customers':role==='franchisee'&&page==='agents/new'?'agents':page
   return (
     <AppShell role={role} page={shellPage} onRoleChange={changeRole} onNavigate={navigate} onLogout={handleLogout}>
       {content}

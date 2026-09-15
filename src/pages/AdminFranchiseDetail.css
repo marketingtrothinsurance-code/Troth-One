@@ -1,0 +1,31 @@
+.admin-franchise-360{--ob-blue:#24759a;--ob-navy:#19384c;--ob-border:#dce5e9;min-width:0}
+.admin-franchise-360>header>.status-badge{flex:none}
+.franchise-360-overview{margin-top:14px;overflow:hidden}
+.franchise-360-info{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:5px 18px 18px}
+.franchise-360-info article{display:flex;min-width:0;padding:12px 6px;flex-direction:column;border-bottom:1px solid #e9edef}
+.franchise-360-info span{color:#71818b;font-size:11px}
+.franchise-360-info b{margin-top:5px;color:#294553;font-size:13px;overflow-wrap:anywhere}
+.franchise-360-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:14px 0}
+.franchise-360-cards button{position:relative;display:grid;min-height:105px;padding:14px 36px 13px 14px;border:1px solid var(--ob-border);border-radius:11px;background:#fff;color:#506672;text-align:left;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s}
+.franchise-360-cards button:hover{border-color:#8cb9ca;background:#f7fbfc;box-shadow:0 5px 16px rgba(31,91,116,.08)}
+.franchise-360-cards button:focus-visible{outline:3px solid rgba(36,117,154,.2);outline-offset:2px}
+.franchise-360-cards button.active{border-color:var(--ob-blue);background:#edf8fb;box-shadow:inset 0 0 0 1px var(--ob-blue)}
+.franchise-360-cards i{display:grid;width:30px;height:30px;place-items:center;border-radius:8px;background:#edf6f9;color:var(--ob-blue)}
+.franchise-360-cards i svg{width:16px}
+.franchise-360-cards span{margin-top:9px;font-size:11px;font-weight:750}
+.franchise-360-cards b{margin-top:3px;color:var(--ob-navy);font:800 21px Manrope,sans-serif}
+.franchise-360-cards>button>svg{position:absolute;right:13px;top:15px;width:15px;color:#8aa0aa}
+.franchise-360-section{margin-top:13px;overflow:hidden}
+.franchise-360-section>.panel-head{gap:12px;flex-wrap:wrap}
+.franchise-360-add{display:inline-flex;align-items:center;gap:6px;flex:none}
+.franchise-360-add svg{width:15px}
+.franchise-360-toolbar{display:flex;align-items:center;gap:8px;padding:13px 17px;border-bottom:1px solid var(--ob-border);background:#fafcfd}
+.franchise-360-toolbar>.search-box{min-width:260px;flex:1}
+.franchise-360-toolbar .select-wrap select{min-width:150px}
+.franchise-360-table{min-width:980px}
+.franchise-360-empty{display:flex;min-height:145px;align-items:center;justify-content:center;gap:9px;color:#71818b}
+.franchise-360-empty svg{width:22px;color:var(--ob-blue)}
+.franchise-360-unavailable{color:#83919a;font-size:11px;font-weight:700;white-space:nowrap}
+.admin-franchise-360 .onboarding-detail-stats{grid-template-columns:repeat(5,minmax(120px,1fr))}
+@media(max-width:1000px){.franchise-360-cards{grid-template-columns:repeat(3,minmax(0,1fr))}.franchise-360-info{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.franchise-360-cards,.franchise-360-info{grid-template-columns:1fr}.franchise-360-section>.panel-head{align-items:flex-start}.franchise-360-add{width:100%;justify-content:center}.franchise-360-toolbar{align-items:stretch;flex-wrap:wrap}.franchise-360-toolbar>.search-box{min-width:100%;width:100%}.admin-franchise-360 .onboarding-detail-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
